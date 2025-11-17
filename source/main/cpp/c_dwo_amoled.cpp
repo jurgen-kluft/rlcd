@@ -1,10 +1,11 @@
 #include <stdlib.h>
 #include <sys/cdefs.h>
 
+#define EXAMPLE_USE_TOUCH 0
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/gpio.h"
-#include "driver/i2c.h"
 #include "driver/spi_master.h"
 #include "esp_timer.h"
 #include "esp_lcd_panel_io.h"
@@ -13,6 +14,11 @@
 #include "esp_err.h"
 #include "esp_log.h"
 
+#if EXAMPLE_USE_TOUCH
+    #include "driver/i2c.h"
+    #define TOUCH_HOST I2C_NUM_0
+#endif
+
 #include "ccore/c_memory.h"
 #include "rdno_lcd/private/esp_lcd_sh8601.h"
 #include "rdno_lcd/private/esp_lcd_touch_ft5x06.h"
@@ -20,8 +26,7 @@
 
 static const char *TAG = "rdno_lcd";
 
-#define LCD_HOST   SPI2_HOST
-#define TOUCH_HOST I2C_NUM_0
+#define LCD_HOST SPI2_HOST
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// Please update the following configuration according to your LCD spec //////////////////////////////
@@ -37,8 +42,6 @@ static const char *TAG = "rdno_lcd";
 #define EXAMPLE_PIN_NUM_LCD_RST        (GPIO_NUM_21)
 #define EXAMPLE_PIN_NUM_BK_LIGHT       (-1)
 
-#define EXAMPLE_USE_TOUCH 1
-
 #if EXAMPLE_USE_TOUCH
     #define EXAMPLE_PIN_NUM_TOUCH_SCL (GPIO_NUM_48)
     #define EXAMPLE_PIN_NUM_TOUCH_SDA (GPIO_NUM_47)
@@ -46,6 +49,9 @@ static const char *TAG = "rdno_lcd";
     #define EXAMPLE_PIN_NUM_TOUCH_INT (-1)
 
 esp_lcd_touch_handle_t tp = NULL;
+#else
+void *tp = NULL;
+
 #endif
 
 static const sh8601_lcd_init_cmd_t lcd_init_cmds[] = {
