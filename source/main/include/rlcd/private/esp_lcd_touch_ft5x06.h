@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "rdno_lcd/esp_lcd_touch.h"
+#include "rlcd/esp_lcd_touch.h"
 
 #ifdef __cplusplus
 extern "C" {

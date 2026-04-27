@@ -20,11 +20,11 @@
 #endif
 
 #include "ccore/c_memory.h"
-#include "rdno_lcd/private/esp_lcd_sh8601.h"
-#include "rdno_lcd/private/esp_lcd_touch_ft5x06.h"
-#include "rdno_lcd/c_dwo_amoled.h"
+#include "rlcd/private/esp_lcd_sh8601.h"
+#include "rlcd/private/esp_lcd_touch_ft5x06.h"
+#include "rlcd/c_dwo_amoled.h"
 
-static const char *TAG = "rdno_lcd";
+static const char *TAG = "rlcd";
 
 #define LCD_HOST SPI2_HOST
 

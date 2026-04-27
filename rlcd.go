@@ -2,7 +2,7 @@ package main
 
 import (
 	ccode "github.com/jurgen-kluft/ccode"
-	cpkg "github.com/jurgen-kluft/rdno_lcd/package"
+	cpkg "github.com/jurgen-kluft/rlcd/package"
 )
 
 func main() {

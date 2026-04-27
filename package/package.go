@@ -1,20 +1,22 @@
-package rdno_lcd
+package rlcd
 
 import (
 	denv "github.com/jurgen-kluft/ccode/denv"
-	rdno_core "github.com/jurgen-kluft/rdno_core/package"
+	rcore "github.com/jurgen-kluft/rcore/package"
 )
 
 const (
 	repo_path = "github.com\\jurgen-kluft"
-	repo_name = "rdno_lcd"
+	repo_name = "rlcd"
 )
 
 func GetPackage() *denv.Package {
 	name := repo_name
 
 	// dependencies
-	corepkg := rdno_core.GetPackage()
+	corepkg := rcore.GetPackage()
+
+	// TODO make a library per LCD type
 
 	// main package
 	mainpkg := denv.NewPackage(repo_path, repo_name)

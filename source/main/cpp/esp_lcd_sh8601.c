@@ -18,7 +18,7 @@
 #include "esp_lcd_panel_commands.h"
 #include "esp_log.h"
 
-#include "rdno_lcd/private/esp_lcd_sh8601.h"
+#include "rlcd/private/esp_lcd_sh8601.h"
 
 #define LCD_OPCODE_WRITE_CMD   (0x02ULL)
 #define LCD_OPCODE_READ_CMD    (0x03ULL)

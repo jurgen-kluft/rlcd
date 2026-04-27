@@ -1,2 +1,2 @@
-# rdno_lcd
+# rlcd
 
