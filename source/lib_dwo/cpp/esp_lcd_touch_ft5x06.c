@@ -16,7 +16,7 @@
 #include "driver/i2c.h"
 #include "esp_lcd_panel_io.h"
 
-#include "rlcd/esp_lcd_touch.h"
+#include "lib_dwo/esp_lcd_touch.h"
 
 static const char *TAG = "FT5x06";
 

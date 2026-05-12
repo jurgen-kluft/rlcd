@@ -1,14 +1,3 @@
-/*
- * SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-
-/**
- * @file
- * @brief ESP LCD touch
- */
-
 #pragma once
 
 #include <stdbool.h>
@@ -29,23 +18,11 @@ extern "C" {
 // Maximum count of the touch buttons supported, range 0 10
 #define ESP_LCD_TOUCH_MAX_BUTTONS 1
 
-/**
- * @brief Touch controller type
- *
- */
 typedef struct esp_lcd_touch_s esp_lcd_touch_t;
 typedef esp_lcd_touch_t *esp_lcd_touch_handle_t;
 
-/**
- * @brief Touch controller interrupt callback type
- *
- */
 typedef void (*esp_lcd_touch_interrupt_callback_t)(esp_lcd_touch_handle_t tp);
 
-/**
- * @brief Touch Configuration Type
- *
- */
 typedef struct {
     uint16_t x_max; /*!< X coordinates max (for mirroring) */
     uint16_t y_max; /*!< Y coordinates max (for mirroring) */
@@ -100,11 +77,8 @@ struct esp_lcd_touch_s {
 
     /**
      * @brief set touch controller into sleep mode
-     *
      * @note This function is usually blocking.
-     *
      * @param tp: Touch handler
-     *
      * @return
      *      - ESP_OK on success, otherwise returns ESP_ERR_xxx
      */
@@ -112,11 +86,8 @@ struct esp_lcd_touch_s {
 
     /**
      * @brief set touch controller into normal mode
-     *
      * @note This function is usually blocking.
-     *
      * @param tp: Touch handler
-     *
      * @return
      *      - ESP_OK on success, otherwise returns ESP_ERR_xxx
      */
@@ -124,11 +95,8 @@ struct esp_lcd_touch_s {
 
     /**
      * @brief Read data from touch controller (mandatory)
-     *
      * @note This function is usually blocking.
-     *
      * @param tp: Touch handler
-     *
      * @return
      *      - ESP_OK on success, otherwise returns ESP_ERR_xxx
      */

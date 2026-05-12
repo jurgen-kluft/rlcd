@@ -12,8 +12,6 @@ const (
 )
 
 func GetPackage() *denv.Package {
-	name := repo_name
-
 	// dependencies
 	cunittestpkg := cunittest.GetPackage()
 	corepkg := rcore.GetPackage()
@@ -23,16 +21,6 @@ func GetPackage() *denv.Package {
 	mainpkg.AddPackage(corepkg)
 	mainpkg.AddPackage(cunittestpkg)
 
-	// TODO, make a library per sensor ?
-
-	// main library
-	mainLib := denv.SetupCppLibProject(mainpkg, name)
-	mainLib.AddDependencies(corepkg.GetMainLib())
-
-	// test library
-	mainTestLib := denv.SetupCppTestLibProject(mainpkg, name)
-	mainTestLib.AddDependencies(corepkg.GetTestLib())
-
 	// DWO library
 	dwoLib := denv.SetupCppLibraryForArduinoEsp32(mainpkg, "lib_dwo", "dwo")
 	dwoLib.AddDependencies(corepkg.GetMainLib())
@@ -41,17 +29,8 @@ func GetPackage() *denv.Package {
 	wcsLib := denv.SetupCppLibraryForArduinoEsp32(mainpkg, "lib_wcs", "wcs")
 	wcsLib.AddDependencies(corepkg.GetMainLib())
 
-	// unittest project
-	maintest := denv.SetupCppTestProject(mainpkg, name)
-	maintest.AddDependencies(cunittestpkg.GetMainLib())
-	maintest.AddDependency(mainTestLib)
-
-	mainpkg.AddMainLib(mainLib)
 	mainpkg.AddLibrary(dwoLib)
 	mainpkg.AddLibrary(wcsLib)
-
-	mainpkg.AddTestLib(mainTestLib)
-	mainpkg.AddUnittest(maintest)
 
 	return mainpkg
 }

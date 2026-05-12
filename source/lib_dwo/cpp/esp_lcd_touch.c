@@ -13,7 +13,7 @@
 #include "esp_check.h"
 #include "esp_log.h"
 
-#include "rlcd/esp_lcd_touch.h"
+#include "lib_dwo/esp_lcd_touch.h"
 
 static const char *TAG = "TP";
 

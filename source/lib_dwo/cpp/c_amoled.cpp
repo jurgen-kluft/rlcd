@@ -20,9 +20,9 @@
 #endif
 
 #include "ccore/c_memory.h"
-#include "rlcd/private/esp_lcd_sh8601.h"
-#include "rlcd/private/esp_lcd_touch_ft5x06.h"
-#include "rlcd/c_dwo_amoled.h"
+#include "lib_dwo/private/esp_lcd_sh8601.h"
+#include "lib_dwo/private/esp_lcd_touch_ft5x06.h"
+#include "lib_dwo/c_amoled.h"
 
 static const char *TAG = "rlcd";
 

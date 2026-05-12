@@ -1,5 +1,5 @@
-#ifndef __ARDUINO_LCD_DWO_AMOLED_H__
-#define __ARDUINO_LCD_DWO_AMOLED_H__
+#ifndef __RLCD_DWO_AMOLED_H__
+#define __RLCD_DWO_AMOLED_H__
 
 namespace ndwo
 {
@@ -19,4 +19,4 @@ namespace ndwo
     bool init_dwo_display(int32_t h_res, int32_t v_res, int8_t bpp, user_notify_flush_ready_t* user_notify_flush_ready, panel_handles_t* out_handles);
 }  // namespace ndwo
 
-#endif  // __ARDUINO_LCD_DWO_AMOLED_H__
+#endif  // __RLCD_DWO_AMOLED_H__
