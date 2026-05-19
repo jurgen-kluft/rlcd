@@ -22,8 +22,10 @@
 #include "esp_check.h"
 #include "esp_compiler.h"
 
+#include "ccore/c_memory.h"
 #include "lib_wcs/c_lcd.h"
 #include "lib_wcs/c_xl9555.h"
+#include "lib_wcs/c_gt9xxx.h"
 
 // -------------------------------------------------------------------------------------------------
 // ------ ST7796 LCD PANEL COMMANDS ----------------------------------------------------------------
@@ -77,9 +79,10 @@ esp_err_t esp_lcd_new_panel_st7796(const esp_lcd_panel_io_handle_t io, const esp
 
     if (panel_dev_config->reset_gpio_num >= 0)
     {
-        gpio_config_t io_conf = {0};
-        io_conf.mode          = GPIO_MODE_OUTPUT;
-        io_conf.pin_bit_mask  = 1ULL << panel_dev_config->reset_gpio_num;
+        gpio_config_t io_conf;
+        ncore::g_memclr(&io_conf, sizeof(gpio_config_t));  // Clear config structure
+        io_conf.mode         = GPIO_MODE_OUTPUT;
+        io_conf.pin_bit_mask = 1ULL << panel_dev_config->reset_gpio_num;
 
         ESP_GOTO_ON_ERROR(gpio_config(&io_conf), err, LCD_PANEL_TAG, "configure GPIO for RST line failed");
     }
@@ -429,10 +432,7 @@ typedef struct _lcd_config_t
     esp_lcd_panel_io_color_trans_done_cb_t notify_flush_ready; /* 刷新回调函数 */
 } lcd_cfg_t;
 
-extern lcd_obj_t              lcd_dev;
-extern esp_lcd_panel_handle_t panel_handle; /* LCD句柄 */
-
-static void lcd_init(lcd_cfg_t lcd_config);
+static bool lcd_init(lcd_cfg_t lcd_config);
 static void lcd_clear(uint16_t color);
 static void lcd_display_dir(uint8_t dir);
 static void lcd_fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, uint16_t color);
@@ -573,10 +573,18 @@ static void lcd_display_dir(uint8_t dir)
 
 static void lcd_draw_point(uint16_t x, uint16_t y, uint16_t color) { esp_lcd_panel_draw_bitmap(panel_handle, x, y, x + 1, y + 1, (uint16_t *)&color); }
 
-static void lcd_init(lcd_cfg_t lcd_config)
+static bool lcd_init(lcd_cfg_t lcd_config)
 {
-    gpio_config_t             gpio_init_struct = {0};
+    gpio_config_t             gpio_init_struct;
+    ncore::g_memclr(&gpio_init_struct, sizeof(gpio_config_t));
+
     esp_lcd_panel_io_handle_t io_handle        = NULL;
+
+    if (!ncore::nxl9555::init())
+    {
+        ESP_LOGE(LCD_TAG, "Failed to initialize I/O expander");
+        return false;
+    }
 
     lcd_dev.wr = LCD_NUM_WR; /* 配置WR引脚 */
     lcd_dev.cs = LCD_NUM_CS; /* 配置CS引脚 */
@@ -597,34 +605,36 @@ static void lcd_init(lcd_cfg_t lcd_config)
 
     esp_lcd_i80_bus_handle_t i80_bus = NULL;
 
-    esp_lcd_i80_bus_config_t bus_config = {0};
-    bus_config.clk_src                  = LCD_CLK_SRC_DEFAULT;
-    bus_config.dc_gpio_num              = lcd_dev.dc;
-    bus_config.wr_gpio_num              = lcd_dev.wr;
-    bus_config.data_gpio_nums[0]        = GPIO_LCD_D0;
-    bus_config.data_gpio_nums[1]        = GPIO_LCD_D1;
-    bus_config.data_gpio_nums[2]        = GPIO_LCD_D2;
-    bus_config.data_gpio_nums[3]        = GPIO_LCD_D3;
-    bus_config.data_gpio_nums[4]        = GPIO_LCD_D4;
-    bus_config.data_gpio_nums[5]        = GPIO_LCD_D5;
-    bus_config.data_gpio_nums[6]        = GPIO_LCD_D6;
-    bus_config.data_gpio_nums[7]        = GPIO_LCD_D7;
-    bus_config.data_gpio_nums[8]        = GPIO_LCD_D8;
-    bus_config.data_gpio_nums[9]        = GPIO_LCD_D9;
-    bus_config.data_gpio_nums[10]       = GPIO_LCD_D10;
-    bus_config.data_gpio_nums[11]       = GPIO_LCD_D11;
-    bus_config.data_gpio_nums[12]       = GPIO_LCD_D12;
-    bus_config.data_gpio_nums[13]       = GPIO_LCD_D13;
-    bus_config.data_gpio_nums[14]       = GPIO_LCD_D14;
-    bus_config.data_gpio_nums[15]       = GPIO_LCD_D15;
-    bus_config.bus_width                = 16;
-    bus_config.max_transfer_bytes       = lcd_dev.pwidth * lcd_dev.pheight * sizeof(uint16_t);
-    bus_config.psram_trans_align        = 64;
-    bus_config.sram_trans_align         = 4;
+    esp_lcd_i80_bus_config_t bus_config;
+    ncore::g_memclr(&bus_config, sizeof(esp_lcd_i80_bus_config_t));
+    bus_config.clk_src            = LCD_CLK_SRC_DEFAULT;
+    bus_config.dc_gpio_num        = lcd_dev.dc;
+    bus_config.wr_gpio_num        = lcd_dev.wr;
+    bus_config.data_gpio_nums[0]  = GPIO_LCD_D0;
+    bus_config.data_gpio_nums[1]  = GPIO_LCD_D1;
+    bus_config.data_gpio_nums[2]  = GPIO_LCD_D2;
+    bus_config.data_gpio_nums[3]  = GPIO_LCD_D3;
+    bus_config.data_gpio_nums[4]  = GPIO_LCD_D4;
+    bus_config.data_gpio_nums[5]  = GPIO_LCD_D5;
+    bus_config.data_gpio_nums[6]  = GPIO_LCD_D6;
+    bus_config.data_gpio_nums[7]  = GPIO_LCD_D7;
+    bus_config.data_gpio_nums[8]  = GPIO_LCD_D8;
+    bus_config.data_gpio_nums[9]  = GPIO_LCD_D9;
+    bus_config.data_gpio_nums[10] = GPIO_LCD_D10;
+    bus_config.data_gpio_nums[11] = GPIO_LCD_D11;
+    bus_config.data_gpio_nums[12] = GPIO_LCD_D12;
+    bus_config.data_gpio_nums[13] = GPIO_LCD_D13;
+    bus_config.data_gpio_nums[14] = GPIO_LCD_D14;
+    bus_config.data_gpio_nums[15] = GPIO_LCD_D15;
+    bus_config.bus_width          = 16;
+    bus_config.max_transfer_bytes = lcd_dev.pwidth * lcd_dev.pheight * sizeof(uint16_t);
+    bus_config.psram_trans_align  = 64;
+    bus_config.sram_trans_align   = 4;
 
     ESP_ERROR_CHECK(esp_lcd_new_i80_bus(&bus_config, &i80_bus)); /* 新建80并口总线 */
 
-    esp_lcd_panel_io_i80_config_t io_config = {0};
+    esp_lcd_panel_io_i80_config_t io_config;
+    ncore::g_memclr(&io_config, sizeof(esp_lcd_panel_io_i80_config_t));
     io_config.cs_gpio_num                   = lcd_dev.cs;
     io_config.pclk_hz                       = 40 * 1000 * 1000;
     io_config.trans_queue_depth             = 32;
@@ -647,11 +657,16 @@ static void lcd_init(lcd_cfg_t lcd_config)
     LCD_RST(1);
     vTaskDelay(200);
 
-    esp_lcd_panel_dev_config_t panel_config = {
-      .reset_gpio_num = LCD_NUM_RST,
-      .rgb_ele_order  = LCD_RGB_ELEMENT_ORDER_BGR,
-      .bits_per_pixel = 16,
-    };
+    // esp_lcd_panel_dev_config_t panel_config = {
+    //   .reset_gpio_num = LCD_NUM_RST,
+    //   .rgb_ele_order  = LCD_RGB_ELEMENT_ORDER_BGR,
+    //   .bits_per_pixel = 16,
+    // };
+    esp_lcd_panel_dev_config_t panel_config;
+    ncore::g_memclr(&panel_config, sizeof(esp_lcd_panel_dev_config_t));
+    panel_config.reset_gpio_num = LCD_NUM_RST;
+    panel_config.rgb_ele_order  = LCD_RGB_ELEMENT_ORDER_BGR;
+    panel_config.bits_per_pixel = 16;
 
     ESP_ERROR_CHECK(esp_lcd_new_panel_st7796(io_handle, &panel_config, &panel_handle));
 
@@ -666,6 +681,8 @@ static void lcd_init(lcd_cfg_t lcd_config)
     ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(panel_handle, true));
     lcd_clear(WHITE);
     LCD_BL(1);
+
+    return true;
 }
 
 #include "lib_wcs/c_lcd.h"
@@ -687,11 +704,10 @@ namespace ncore
                   .notify_flush_ready = NULL,
                 };
 
-                lcd_init(lcd_config);
-                return true;
+                return lcd_init(lcd_config);
             }
-            u16  width() { return lcd_dev.width; }
-            u16  height() { return lcd_dev.height; }
+            u16 width() { return lcd_dev.width; }
+            u16 height() { return lcd_dev.height; }
 
             void rotation(u8 rotation)
             {

@@ -16,6 +16,7 @@
 #include "esp_check.h"
 #include "esp_compiler.h"
 
+#include "ccore/c_memory.h"
 #include "lib_wcs/c_xl9555.h"
 #include "lib_wcs/c_gt9xxx.h"
 
@@ -59,25 +60,17 @@ namespace ncore
         // buf: data buffer
         // len: number of bytes to write
         // return: esp_err_t (ESP_OK on success)
-        static esp_err_t gt9xxx_wr_reg(device_t *dev, u16 reg, u8 *buf, u8 len)
+        static esp_err_t gt9xxx_wr_reg(i2c_master_dev_handle_t dev_handle, u16 reg, u8 *buf, u8 len)
         {
             esp_err_t ret;
-            u8       *wr_buf = (u8 *)malloc(2 + len);
-
-            if (wr_buf == NULL)
-            {
-                ESP_LOGE(dev->tag, "%s memory failed", __func__);
-                return ESP_ERR_NO_MEM;  // Memory allocation failed
-            }
+            u8        wr_buf[2 + len];
 
             wr_buf[0] = reg >> 8;
             wr_buf[1] = reg & 0XFF;
 
             memcpy(wr_buf + 2, buf, len);  // Copy data to TX buffer
 
-            ret = i2c_master_transmit(dev->gt9xxx_handle, wr_buf, 2 + len, -1);
-
-            free(wr_buf);  // Release memory after transmission
+            ret = i2c_master_transmit(dev_handle, wr_buf, 2 + len, -1);
 
             return ret;
         }
@@ -87,17 +80,17 @@ namespace ncore
         // buf: data buffer
         // len: number of bytes to read
         // return: esp_err_t (ESP_OK on success)
-        static esp_err_t gt9xxx_rd_reg(device_t *dev, u16 reg, u8 *buf, u8 len)
+        static esp_err_t gt9xxx_rd_reg(i2c_master_dev_handle_t dev_handle, u16 reg, u8 *buf, u8 len)
         {
             u8 memaddr_buf[2];
             memaddr_buf[0] = reg >> 8;
             memaddr_buf[1] = reg & 0XFF;
 
-            return i2c_master_transmit_receive(dev->gt9xxx_handle, memaddr_buf, sizeof(memaddr_buf), buf, len, -1);
+            return i2c_master_transmit_receive(dev_handle, memaddr_buf, sizeof(memaddr_buf), buf, len, -1);
         }
 
         // Initialize GT9XXX touchscreen
-        // return: ESP_OK on success, non-zero on failure
+        // return: true on success, false on failure
         bool init()
         {
             u8 temp[5];
@@ -106,6 +99,7 @@ namespace ncore
             dev->tag      = "gt9xxx";
 
             i2c_master_bus_config_t i2c1_bus_config;
+            ncore::g_memclr(&i2c1_bus_config, sizeof(i2c1_bus_config));          // Clear config structure
             i2c1_bus_config.clk_source                   = I2C_CLK_SRC_DEFAULT;  // Clock source
             i2c1_bus_config.i2c_port                     = I2C_NUM_1;            // I2C port
             i2c1_bus_config.scl_io_num                   = GPIO_NUM_40;          // SCL pin
@@ -117,22 +111,24 @@ namespace ncore
             ESP_ERROR_CHECK(i2c_new_master_bus(&i2c1_bus_config, &dev->myiic1_bus_handle));
 
             i2c_device_config_t gt9xxx_i2c_dev_conf;
-            gt9xxx_i2c_dev_conf.dev_addr_length = I2C_ADDR_BIT_LEN_7;  // Slave address length
-            gt9xxx_i2c_dev_conf.scl_speed_hz    = 400000;              // Transfer speed
-            gt9xxx_i2c_dev_conf.device_address  = GT9XXX_DEV_ID;       // 7-bit slave address
+            ncore::g_memclr(&gt9xxx_i2c_dev_conf, sizeof(gt9xxx_i2c_dev_conf));  // Clear config structure
+            gt9xxx_i2c_dev_conf.dev_addr_length = I2C_ADDR_BIT_LEN_7;            // Slave address length
+            gt9xxx_i2c_dev_conf.scl_speed_hz    = 400000;                        // Transfer speed
+            gt9xxx_i2c_dev_conf.device_address  = GT9XXX_DEV_ID;                 // 7-bit slave address
 
             // Add GT9XXX device to the I2C bus
             ESP_ERROR_CHECK(i2c_master_bus_add_device(dev->myiic1_bus_handle, &gt9xxx_i2c_dev_conf, &dev->gt9xxx_handle));
 
             // Configure CT_RST and CT_INT pins; timing determines IC address 0x14
             // (some chips support an alternate timing sequence for address 0x5D).
-            gpio_config_t gpio_init_struct = {0};
-            gpio_init_struct.intr_type     = GPIO_INTR_DISABLE;            // Disable pin interrupt
-            gpio_init_struct.pull_up_en    = GPIO_PULLUP_DISABLE;          // Disable pull-up
-            gpio_init_struct.pull_down_en  = GPIO_PULLDOWN_DISABLE;        // Disable pull-down
-            gpio_init_struct.mode          = GPIO_MODE_INPUT;              // Input mode
-            gpio_init_struct.pin_bit_mask  = 1ull << GT9XXX_INT_GPIO_PIN;  // Pin bitmask
-            gpio_config(&gpio_init_struct);                                // Configure interrupt pin
+            gpio_config_t gpio_init_struct;
+            ncore::g_memclr(&gpio_init_struct, sizeof(gpio_config_t));    // Clear config structure
+            gpio_init_struct.intr_type    = GPIO_INTR_DISABLE;            // Disable pin interrupt
+            gpio_init_struct.pull_up_en   = GPIO_PULLUP_DISABLE;          // Disable pull-up
+            gpio_init_struct.pull_down_en = GPIO_PULLDOWN_DISABLE;        // Disable pull-down
+            gpio_init_struct.mode         = GPIO_MODE_INPUT;              // Input mode
+            gpio_init_struct.pin_bit_mask = 1ull << GT9XXX_INT_GPIO_PIN;  // Pin bitmask
+            gpio_config(&gpio_init_struct);                               // Configure interrupt pin
 
             for (int i = 2; i > 0; i--)
             {
@@ -144,7 +140,7 @@ namespace ncore
 
             vTaskDelay(pdMS_TO_TICKS(100));
 
-            gt9xxx_rd_reg(dev, GT9XXX_PID_REG, temp, 4);  // Read product ID
+            gt9xxx_rd_reg(dev->gt9xxx_handle, GT9XXX_PID_REG, temp, 4);  // Read product ID
             temp[4] = 0;
 
             // Check whether this is a supported touch controller
@@ -162,24 +158,24 @@ namespace ncore
             }
             if (supported_id == -1)
             {
-                free(dev);
-                return NULL;  // Init failed: unsupported IC. Check touch IC model and timing sequence
+                ESP_LOGE(dev->tag, "Unsupported GT9XXX touch controller ID: %s", temp);
+                return false;  // Init failed: unsupported IC. Check touch IC model and timing sequence
             }
-            ESP_LOGI("GT9XXX", "CTP:%s", supported_ids[supported_id]);  // Print touch controller IC ID
+            ESP_LOGI(dev->tag, "CTP:%s", supported_ids[supported_id]);  // Print touch controller IC ID
 
             temp[0] = 0X02;
-            gt9xxx_wr_reg(dev, GT9XXX_CTRL_REG, temp, 1);  // Soft-reset GT9XXX
+            gt9xxx_wr_reg(dev->gt9xxx_handle, GT9XXX_CTRL_REG, temp, 1);  // Soft-reset GT9XXX
 
             vTaskDelay(10);
 
             temp[0] = 0X00;
-            gt9xxx_wr_reg(dev, GT9XXX_CTRL_REG, temp, 1);  // End reset and enter coordinate-read mode
+            gt9xxx_wr_reg(dev->gt9xxx_handle, GT9XXX_CTRL_REG, temp, 1);  // End reset and enter coordinate-read mode
 
-            return ESP_OK;
+            return true;
         }
 
-        bool write_reg(u16 reg, u8 *buf, u8 len) { return gt9xxx_wr_reg(&g_gt9xxx_dev, reg, buf, len) == ESP_OK; }
-        bool read_reg(u16 reg, u8 *buf, u8 len) { return gt9xxx_rd_reg(&g_gt9xxx_dev, reg, buf, len) == ESP_OK; }
+        bool write_reg(u16 reg, u8 *buf, u8 len) { return gt9xxx_wr_reg(g_gt9xxx_dev.gt9xxx_handle, reg, buf, len) == ESP_OK; }
+        bool read_reg(u16 reg, u8 *buf, u8 len) { return gt9xxx_rd_reg(g_gt9xxx_dev.gt9xxx_handle, reg, buf, len) == ESP_OK; }
 
         // Register table for up to 10 GT9XXX touch points
         static const u16 GT9XXX_TPX_TBL[10] = {
@@ -192,7 +188,7 @@ namespace ncore
                 ESP_LOGE(g_gt9xxx_dev.tag, "Invalid touch point index: %d", i);
                 return false;  // Invalid touch point index
             }
-            return gt9xxx_rd_reg(&g_gt9xxx_dev, GT9XXX_TPX_TBL[i], buf, len) == ESP_OK;
+            return gt9xxx_rd_reg(g_gt9xxx_dev.gt9xxx_handle, GT9XXX_TPX_TBL[i], buf, len) == ESP_OK;
         }
 
     }  // namespace ngt9xxx

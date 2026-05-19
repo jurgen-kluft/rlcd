@@ -16,6 +16,7 @@
 #include "esp_check.h"
 #include "esp_compiler.h"
 
+#include "ccore/c_memory.h"
 #include "lib_wcs/c_xl9555.h"
 
 // -------------------------------------------------------------------------------------------------
@@ -85,10 +86,10 @@ static esp_err_t xl9555_write_reg(device_t *dev, uint8_t reg, uint8_t *data, siz
     return i2c_master_transmit(dev->dev_handle, wr_buf, len + 1, -1);
 }
 
-static esp_err_t xl9555_read_reg(device_t *dev, uint8_t reg, uint8_t *data, size_t len) 
-{ 
+static esp_err_t xl9555_read_reg(device_t *dev, uint8_t reg, uint8_t *data, size_t len)
+{
     // First, send the register address we want to read from, then read the data back
-    return i2c_master_transmit_receive(dev->dev_handle, &reg, 1, data, len, -1); 
+    return i2c_master_transmit_receive(dev->dev_handle, &reg, 1, data, len, -1);
 }
 
 esp_err_t xl9555_init(void)
@@ -98,7 +99,8 @@ esp_err_t xl9555_init(void)
         return ESP_OK;
     }
 
-    i2c_master_bus_config_t i2c_bus_config      = {};
+    i2c_master_bus_config_t i2c_bus_config;
+    ncore::g_memclr(&i2c_bus_config, sizeof(i2c_master_bus_config_t));  // Clear config structure
     i2c_bus_config.clk_source                   = I2C_CLK_SRC_DEFAULT;
     i2c_bus_config.i2c_port                     = (i2c_port_num_t)-1;
     i2c_bus_config.scl_io_num                   = (gpio_num_t)1;
@@ -113,10 +115,11 @@ esp_err_t xl9555_init(void)
         return ret;
     }
 
-    i2c_device_config_t i2c_dev_config = {};
-    i2c_dev_config.dev_addr_length     = I2C_ADDR_BIT_LEN_7;
-    i2c_dev_config.device_address      = XL9555_ADDR;
-    i2c_dev_config.scl_speed_hz        = 400000;
+    i2c_device_config_t i2c_dev_config;
+    ncore::g_memclr(&i2c_dev_config, sizeof(i2c_dev_config));  // Clear config structure
+    i2c_dev_config.dev_addr_length = I2C_ADDR_BIT_LEN_7;
+    i2c_dev_config.device_address  = XL9555_ADDR;
+    i2c_dev_config.scl_speed_hz    = 400000;
 
     ret = i2c_master_bus_add_device(g_xl9555_dev.bus_handle, &i2c_dev_config, &g_xl9555_dev.dev_handle);
     if (ret != ESP_OK)
