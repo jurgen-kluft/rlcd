@@ -9,26 +9,25 @@ namespace ncore
 {
     namespace ngt9xxx
     {
-        struct device_t;
+        bool init();
 
-        device_t* create();
-        u8        max_tps(device_t* dev);  // Get the maximum number of touch points supported by the device
+        u8 max_tps();  // Get the maximum number of touch points supported by the device
 
         // GT9XXX device address
-        enum gt9xxx_device_e
+        enum device_e
         {
-            GT9XXX_DEV_ID = 0x14,  // GT9XXX device address
+            GT9XXX_DEV_ID = 0x14,  // I2C device address
         };
 
         // GT9XXX I2C read/write commands
-        enum gt9xxx_cmd_e
+        enum cmd_e
         {
             GT9XXX_CMD_WR = 0X28,  // I2C Write command
             GT9XXX_CMD_RD = 0X29,  // I2C Read command
         };
 
         // GT9XXX register definitions
-        enum gt9xxx_reg_e
+        enum reg_e
         {
             GT9XXX_CTRL_REG  = 0X8040,  // GT9XXX control register
             GT9XXX_CFGS_REG  = 0X8047,  // GT9XXX configuration start register
@@ -48,9 +47,9 @@ namespace ncore
             GT9XXX_TP10_REG  = 0X8198,  // Touch point 10 data address
         };
 
-        bool write_reg(device_t* dev, u16 reg, u8* buf, u8 len);
-        bool read_reg(device_t* dev, u16 reg, u8* buf, u8 len);
-        bool read_tpx_reg(device_t* dev, u16 i, u8* buf, u8 len);
+        bool write_reg(u16 reg, u8* buf, u8 len);
+        bool read_reg(u16 reg, u8* buf, u8 len);
+        bool read_tpx_reg(u16 i, u8* buf, u8 len);
 
     }  // namespace ngt9xxx
 }  // namespace ncore

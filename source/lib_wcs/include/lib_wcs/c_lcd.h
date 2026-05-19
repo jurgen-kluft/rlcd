@@ -12,9 +12,11 @@ namespace ncore
         namespace nwcs
         {
             bool initialize();
+            u16  width();
+            u16  height();
 
-            void rotation(uint8_t rotation);
-            void orientation(uint8_t orientation);
+            void rotation(u8 rotation);
+            void orientation(u8 orientation);
 
             void draw_rectangle(u16 sx, u16 sy, u16 ex, u16 ey, u16 color);
             void draw_sprite(u16 sx, u16 sy, u16 ex, u16 ey, const u16 *color);

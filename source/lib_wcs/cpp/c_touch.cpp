@@ -26,9 +26,9 @@ namespace ncore
             }
             tp.touchstatus = 0;
 
-            tp.touchtype  = portrait ? 0 : 0X01;  // Set landscape/portrait
-            tp.gt9xxx_dev = ngt9xxx::create();    // Initialize the GT9xxx device
-            tp.touchtype |= 0X80;                 // Capacitive touchscreen
+            tp.touchtype = portrait ? 0 : 0X01;  // Set landscape/portrait
+            ngt9xxx::init();                     // Initialize the GT9xxx device
+            tp.touchtype |= 0X80;                // Capacitive touchscreen
 
             tp.polling_interval = 0;  // Initialize polling interval counter
             return true;
@@ -48,20 +48,19 @@ namespace ncore
             u8 i   = 0;
             u8 res = 0;
 
-            ngt9xxx::device_t *dev     = tp.gt9xxx_dev;
-            const u8           max_tps = ngt9xxx::max_tps(dev);
+            const u8           max_tps = ngt9xxx::max_tps();
 
             tp.polling_interval++;
             if ((tp.polling_interval % 10) == 0 || tp.polling_interval < 10)  // When idle, check once every 10 scans to reduce CPU usage
             {
-                ngt9xxx::read_reg(dev, ngt9xxx::GT9XXX_GSTID_REG, &mode, 1);  // Read touch-point status
+                ngt9xxx::read_reg(ngt9xxx::GT9XXX_GSTID_REG, &mode, 1);  // Read touch-point status
 
                 const u8 num_touch_points = mode & 0x0F;  // Extract number of touch points from status
 
                 if ((mode & 0X80) && (num_touch_points <= max_tps))
                 {
                     i = 0;
-                    ngt9xxx::write_reg(dev, ngt9xxx::GT9XXX_GSTID_REG, &i, 1);  // Clear flag
+                    ngt9xxx::write_reg(ngt9xxx::GT9XXX_GSTID_REG, &i, 1);  // Clear flag
                 }
 
                 if ((mode & 0XF) && (num_touch_points <= max_tps))
@@ -73,7 +72,7 @@ namespace ncore
                     {
                         if (tp.touchstatus & (1 << i))  // Touch valid?
                         {
-                            ngt9xxx::read_tpx_reg(dev, i, buf, 4);  // Read XY coordinates
+                            ngt9xxx::read_tpx_reg(i, buf, 4);  // Read XY coordinates
 
                             if (tp_is_portrait(tp))  // Portrait
                             {

@@ -44,8 +44,7 @@ namespace ncore
             //
             u8 touchtype;
 
-            u8                 polling_interval;  // Control polling interval to reduce CPU usage
-            ngt9xxx::device_t* gt9xxx_dev;        // GT9XXX device instance for capacitive touch
+            u8 polling_interval;  // Control polling interval to reduce CPU usage
         };
 
         static inline bool          tp_is_pressed(const touch_panel_t& tp) { return (tp.touchstatus & 0x8000) != 0; }

@@ -29,6 +29,11 @@ func GetPackage() *denv.Package {
 	wcsLib := denv.SetupCppLibraryForArduinoEsp32(mainpkg, "lib_wcs", "wcs")
 	wcsLib.AddDependencies(corepkg.GetMainLib())
 
+	// Example applictions
+	wcsExample := denv.SetupCppAppProjectForArduinoEsp32(mainpkg, "wcs_example", "wcs_example")
+	wcsExample.AddDependency(wcsLib)
+
+	mainpkg.AddMainApp(wcsExample)
 	mainpkg.AddLibrary(dwoLib)
 	mainpkg.AddLibrary(wcsLib)
 

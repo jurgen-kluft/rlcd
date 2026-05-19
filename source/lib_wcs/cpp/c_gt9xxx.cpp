@@ -49,12 +49,17 @@ namespace ncore
             u8 max_touch_points;  // Default number of supported touch points (5-point touch)
         };
 
+        static device_t g_gt9xxx_dev = {"gt9xxx", NULL, NULL, 5};
+
+        // Get the maximum number of touch points supported by the device
+        u8 max_tps() { return g_gt9xxx_dev.max_touch_points; }
+
         // Write data to GT9XXX
         // reg: start register address
         // buf: data buffer
         // len: number of bytes to write
         // return: esp_err_t (ESP_OK on success)
-        esp_err_t gt9xxx_wr_reg(device_t *dev, u16 reg, u8 *buf, u8 len)
+        static esp_err_t gt9xxx_wr_reg(device_t *dev, u16 reg, u8 *buf, u8 len)
         {
             esp_err_t ret;
             u8       *wr_buf = (u8 *)malloc(2 + len);
@@ -82,7 +87,7 @@ namespace ncore
         // buf: data buffer
         // len: number of bytes to read
         // return: esp_err_t (ESP_OK on success)
-        esp_err_t gt9xxx_rd_reg(device_t *dev, u16 reg, u8 *buf, u8 len)
+        static esp_err_t gt9xxx_rd_reg(device_t *dev, u16 reg, u8 *buf, u8 len)
         {
             u8 memaddr_buf[2];
             memaddr_buf[0] = reg >> 8;
@@ -91,30 +96,14 @@ namespace ncore
             return i2c_master_transmit_receive(dev->gt9xxx_handle, memaddr_buf, sizeof(memaddr_buf), buf, len, -1);
         }
 
-        // Get the maximum number of touch points supported by the device
-        u8 max_tps(device_t *dev)
-        {
-            if (dev == NULL)
-            {
-                ESP_LOGE("GT9XXX", "Device is NULL");
-                return 0;  // Invalid device
-            }
-            return dev->max_touch_points;
-        }
-
         // Initialize GT9XXX touchscreen
         // return: ESP_OK on success, non-zero on failure
-        device_t *create()
+        bool init()
         {
             u8 temp[5];
 
-            device_t *dev = (device_t *)malloc(sizeof(device_t));
-            if (dev == NULL)
-            {
-                ESP_LOGE("gt9xxx", "%s memory failed", __func__);
-                return NULL;  // Memory allocation failed
-            }
-            dev->tag = "gt9xxx";
+            device_t *dev = &g_gt9xxx_dev;
+            dev->tag      = "gt9xxx";
 
             i2c_master_bus_config_t i2c1_bus_config;
             i2c1_bus_config.clk_source                   = I2C_CLK_SRC_DEFAULT;  // Clock source
@@ -189,21 +178,21 @@ namespace ncore
             return ESP_OK;
         }
 
-        bool write_reg(device_t *dev, u16 reg, u8 *buf, u8 len) { return gt9xxx_wr_reg(dev, reg, buf, len) == ESP_OK; }
-        bool read_reg(device_t *dev, u16 reg, u8 *buf, u8 len) { return gt9xxx_rd_reg(dev, reg, buf, len) == ESP_OK; }
+        bool write_reg(u16 reg, u8 *buf, u8 len) { return gt9xxx_wr_reg(&g_gt9xxx_dev, reg, buf, len) == ESP_OK; }
+        bool read_reg(u16 reg, u8 *buf, u8 len) { return gt9xxx_rd_reg(&g_gt9xxx_dev, reg, buf, len) == ESP_OK; }
 
         // Register table for up to 10 GT9XXX touch points
         static const u16 GT9XXX_TPX_TBL[10] = {
           GT9XXX_TP1_REG, GT9XXX_TP2_REG, GT9XXX_TP3_REG, GT9XXX_TP4_REG, GT9XXX_TP5_REG, GT9XXX_TP6_REG, GT9XXX_TP7_REG, GT9XXX_TP8_REG, GT9XXX_TP9_REG, GT9XXX_TP10_REG,
         };
-        bool read_tpx_reg(device_t *dev, u16 i, u8 *buf, u8 len)
+        bool read_tpx_reg(u16 i, u8 *buf, u8 len)
         {
-            if (i >= dev->max_touch_points)
+            if (i >= g_gt9xxx_dev.max_touch_points)
             {
-                ESP_LOGE(dev->tag, "Invalid touch point index: %d", i);
+                ESP_LOGE(g_gt9xxx_dev.tag, "Invalid touch point index: %d", i);
                 return false;  // Invalid touch point index
             }
-            return gt9xxx_rd_reg(dev, GT9XXX_TPX_TBL[i], buf, len) == ESP_OK;
+            return gt9xxx_rd_reg(&g_gt9xxx_dev, GT9XXX_TPX_TBL[i], buf, len) == ESP_OK;
         }
 
     }  // namespace ngt9xxx

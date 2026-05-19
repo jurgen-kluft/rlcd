@@ -690,8 +690,10 @@ namespace ncore
                 lcd_init(lcd_config);
                 return true;
             }
+            u16  width() { return lcd_dev.width; }
+            u16  height() { return lcd_dev.height; }
 
-            void rotation(uint8_t rotation)
+            void rotation(u8 rotation)
             {
                 switch (rotation & 3)
                 {
@@ -702,7 +704,7 @@ namespace ncore
                 }
             }
 
-            void orientation(uint8_t orientation)
+            void orientation(u8 orientation)
             {
                 // orientation: 0-3, 0: normal, 1: mirror x, 2: mirror y, 3: mirror xy
                 switch (orientation & 3)
