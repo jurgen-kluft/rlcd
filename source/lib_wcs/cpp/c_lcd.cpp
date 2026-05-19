@@ -575,10 +575,10 @@ static void lcd_draw_point(uint16_t x, uint16_t y, uint16_t color) { esp_lcd_pan
 
 static bool lcd_init(lcd_cfg_t lcd_config)
 {
-    gpio_config_t             gpio_init_struct;
+    gpio_config_t gpio_init_struct;
     ncore::g_memclr(&gpio_init_struct, sizeof(gpio_config_t));
 
-    esp_lcd_panel_io_handle_t io_handle        = NULL;
+    esp_lcd_panel_io_handle_t io_handle = NULL;
 
     if (!ncore::nxl9555::init())
     {
@@ -635,18 +635,18 @@ static bool lcd_init(lcd_cfg_t lcd_config)
 
     esp_lcd_panel_io_i80_config_t io_config;
     ncore::g_memclr(&io_config, sizeof(esp_lcd_panel_io_i80_config_t));
-    io_config.cs_gpio_num                   = lcd_dev.cs;
-    io_config.pclk_hz                       = 40 * 1000 * 1000;
-    io_config.trans_queue_depth             = 32;
-    io_config.dc_levels.dc_idle_level       = 0;
-    io_config.dc_levels.dc_cmd_level        = 0;
-    io_config.dc_levels.dc_dummy_level      = 0;
-    io_config.dc_levels.dc_data_level       = 1;
-    io_config.flags.swap_color_bytes        = 0;
-    io_config.on_color_trans_done           = lcd_config.notify_flush_ready;
-    io_config.user_ctx                      = lcd_config.user_ctx;
-    io_config.lcd_cmd_bits                  = 8;
-    io_config.lcd_param_bits                = 8;
+    io_config.cs_gpio_num              = lcd_dev.cs;
+    io_config.pclk_hz                  = 40 * 1000 * 1000;
+    io_config.trans_queue_depth        = 32;
+    io_config.dc_levels.dc_idle_level  = 0;
+    io_config.dc_levels.dc_cmd_level   = 0;
+    io_config.dc_levels.dc_dummy_level = 0;
+    io_config.dc_levels.dc_data_level  = 1;
+    io_config.flags.swap_color_bytes   = 0;
+    io_config.on_color_trans_done      = lcd_config.notify_flush_ready;
+    io_config.user_ctx                 = lcd_config.user_ctx;
+    io_config.lcd_cmd_bits             = 8;
+    io_config.lcd_param_bits           = 8;
 
     ESP_ERROR_CHECK(esp_lcd_new_panel_io_i80(i80_bus, &io_config, &io_handle));
 
@@ -691,74 +691,71 @@ namespace ncore
 {
     namespace nlcd
     {
-        namespace nwcs
+        bool initialize()
         {
-            bool initialize()
+            if (!nxl9555::init())
+                return false;
+
+            // initialize LCD
+            lcd_cfg_t lcd_config = {
+              .user_ctx           = NULL,
+              .notify_flush_ready = NULL,
+            };
+
+            return lcd_init(lcd_config);
+        }
+        u16 width() { return lcd_dev.width; }
+        u16 height() { return lcd_dev.height; }
+
+        void rotation(u8 rotation)
+        {
+            switch (rotation & 3)
             {
-                if (!nxl9555::init())
-                    return false;
-
-                // initialize LCD
-                lcd_cfg_t lcd_config = {
-                  .user_ctx           = NULL,
-                  .notify_flush_ready = NULL,
-                };
-
-                return lcd_init(lcd_config);
+                case 0: lcd_display_dir(0); break;
+                case 1: lcd_display_dir(1); break;
+                case 2: lcd_display_dir(0); break;
+                case 3: lcd_display_dir(1); break;
             }
-            u16 width() { return lcd_dev.width; }
-            u16 height() { return lcd_dev.height; }
+        }
 
-            void rotation(u8 rotation)
+        void orientation(u8 orientation)
+        {
+            // orientation: 0-3, 0: normal, 1: mirror x, 2: mirror y, 3: mirror xy
+            switch (orientation & 3)
             {
-                switch (rotation & 3)
-                {
-                    case 0: lcd_display_dir(0); break;
-                    case 1: lcd_display_dir(1); break;
-                    case 2: lcd_display_dir(0); break;
-                    case 3: lcd_display_dir(1); break;
-                }
+                case 0: esp_lcd_panel_mirror(panel_handle, false, false); break;
+                case 1: esp_lcd_panel_mirror(panel_handle, true, false); break;
+                case 2: esp_lcd_panel_mirror(panel_handle, false, true); break;
+                case 3: esp_lcd_panel_mirror(panel_handle, true, true); break;
             }
+        }
 
-            void orientation(u8 orientation)
+        void draw_rectangle(u16 sx, u16 sy, u16 ex, u16 ey, u16 color) { lcd_fill(sx, sy, ex, ey, color); }
+        void draw_sprite(u16 sx, u16 sy, u16 ex, u16 ey, const u16 *color)
+        {
+            if (sx >= lcd_dev.width || sy >= lcd_dev.height || ex >= lcd_dev.width || ey >= lcd_dev.height || sx > ex || sy > ey)
             {
-                // orientation: 0-3, 0: normal, 1: mirror x, 2: mirror y, 3: mirror xy
-                switch (orientation & 3)
-                {
-                    case 0: esp_lcd_panel_mirror(panel_handle, false, false); break;
-                    case 1: esp_lcd_panel_mirror(panel_handle, true, false); break;
-                    case 2: esp_lcd_panel_mirror(panel_handle, false, true); break;
-                    case 3: esp_lcd_panel_mirror(panel_handle, true, true); break;
-                }
-            }
-
-            void draw_rectangle(u16 sx, u16 sy, u16 ex, u16 ey, u16 color) { lcd_fill(sx, sy, ex, ey, color); }
-            void draw_sprite(u16 sx, u16 sy, u16 ex, u16 ey, const u16 *color)
-            {
-                if (sx >= lcd_dev.width || sy >= lcd_dev.height || ex >= lcd_dev.width || ey >= lcd_dev.height || sx > ex || sy > ey)
-                {
-                    ESP_LOGE("LCD_TAG", "Invalid sprite area: sx=%d, sy=%d, ex=%d, ey=%d", sx, sy, ex, ey);
-                    return;
-                }
-
-                uint16_t width  = ex - sx + 1;
-                uint16_t height = ey - sy + 1;
-
-                esp_lcd_panel_draw_bitmap(panel_handle, sx, sy, ex + 1, ey + 1, color);
+                ESP_LOGE("LCD_TAG", "Invalid sprite area: sx=%d, sy=%d, ex=%d, ey=%d", sx, sy, ex, ey);
+                return;
             }
 
-            void led_switch(bool on)
-            {
-                if (on)
-                    nxl9555::pin_write(ncore::nxl9555::LED1_IO, 1);
-                else
-                    nxl9555::pin_write(ncore::nxl9555::LED1_IO, 0);
-            }
-            void led_toggle() { nxl9555::pin_toggle(ncore::nxl9555::LED1_IO); }
+            uint16_t width  = ex - sx + 1;
+            uint16_t height = ey - sy + 1;
 
-            void backlight_switch(bool on) { LCD_BL(on ? 1 : 0); }
+            esp_lcd_panel_draw_bitmap(panel_handle, sx, sy, ex + 1, ey + 1, color);
+        }
 
-        }  // namespace nwcs
+        void led_switch(bool on)
+        {
+            if (on)
+                nxl9555::pin_write(ncore::nxl9555::LED1_IO, 1);
+            else
+                nxl9555::pin_write(ncore::nxl9555::LED1_IO, 0);
+        }
+        void led_toggle() { nxl9555::pin_toggle(ncore::nxl9555::LED1_IO); }
+
+        void backlight_switch(bool on) { LCD_BL(on ? 1 : 0); }
+
     }  // namespace nlcd
 }  // namespace ncore
 

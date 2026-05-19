@@ -9,26 +9,23 @@ namespace ncore
 {
     namespace nlcd
     {
-        namespace nwcs
-        {
-            bool initialize();
-            u16  width();
-            u16  height();
+        bool initialize();
+        u16  width();
+        u16  height();
 
-            void rotation(u8 rotation);
-            void orientation(u8 orientation);
+        void rotation(u8 rotation);
+        void orientation(u8 orientation);
 
-            void draw_rectangle(u16 sx, u16 sy, u16 ex, u16 ey, u16 color);
-            void draw_sprite(u16 sx, u16 sy, u16 ex, u16 ey, const u16 *color);
+        void draw_rectangle(u16 sx, u16 sy, u16 ex, u16 ey, u16 color);
+        void draw_sprite(u16 sx, u16 sy, u16 ex, u16 ey, const u16 *color);
 
-            // WCS display is a full ESP32-S3 board and has an RGB LED on board
-            void led_toggle();
-            void led_switch(bool on);
+        // WCS display is a full ESP32-S3 board and has an RGB LED on board
+        void led_toggle();
+        void led_switch(bool on);
 
-            // WCS display has a backlight control pin, which can be used to turn on/off the backlight
-            void backlight_switch(bool on);
+        // WCS display has a backlight control pin, which can be used to turn on/off the backlight
+        void backlight_switch(bool on);
 
-        }  // namespace nwcs
     }  // namespace nlcd
 }  // namespace ncore
 

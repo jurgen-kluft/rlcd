@@ -92,6 +92,10 @@ static esp_err_t xl9555_read_reg(device_t *dev, uint8_t reg, uint8_t *data, size
     return i2c_master_transmit_receive(dev->dev_handle, &reg, 1, data, len, -1);
 }
 
+#define IIC_NUM_PORT       I2C_NUM_0        /* IIC0 */
+#define IIC_SDA_GPIO_PIN   GPIO_NUM_2       /* IIC0_SDA引脚 */
+#define IIC_SCL_GPIO_PIN   GPIO_NUM_1       /* IIC0_SCL引脚 */
+
 esp_err_t xl9555_init(void)
 {
     if (g_xl9555_dev.initialized)
@@ -102,9 +106,9 @@ esp_err_t xl9555_init(void)
     i2c_master_bus_config_t i2c_bus_config;
     ncore::g_memclr(&i2c_bus_config, sizeof(i2c_master_bus_config_t));  // Clear config structure
     i2c_bus_config.clk_source                   = I2C_CLK_SRC_DEFAULT;
-    i2c_bus_config.i2c_port                     = (i2c_port_num_t)-1;
-    i2c_bus_config.scl_io_num                   = (gpio_num_t)1;
-    i2c_bus_config.sda_io_num                   = (gpio_num_t)2;
+    i2c_bus_config.i2c_port                     = (i2c_port_num_t)IIC_NUM_PORT;
+    i2c_bus_config.scl_io_num                   = (gpio_num_t)IIC_SCL_GPIO_PIN;
+    i2c_bus_config.sda_io_num                   = (gpio_num_t)IIC_SDA_GPIO_PIN;
     i2c_bus_config.glitch_ignore_cnt            = 7;
     i2c_bus_config.flags.enable_internal_pullup = true;
 
