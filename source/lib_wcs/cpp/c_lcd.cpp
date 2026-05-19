@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <Wire.h>
 
 #include <stdio.h>
 
@@ -23,133 +22,11 @@
 #include "esp_check.h"
 #include "esp_compiler.h"
 
-// -------------------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------------------
-
-/* XL9555寄存器宏 */
-#define XL9555_INPUT_PORT0_REG     0 /* 输入寄存器0地址 */
-#define XL9555_INPUT_PORT1_REG     1 /* 输入寄存器1地址 */
-#define XL9555_OUTPUT_PORT0_REG    2 /* 输出寄存器0地址 */
-#define XL9555_OUTPUT_PORT1_REG    3 /* 输出寄存器1地址 */
-#define XL9555_INVERSION_PORT0_REG 4 /* 极性反转寄存器0地址 */
-#define XL9555_INVERSION_PORT1_REG 5 /* 极性反转寄存器1地址 */
-#define XL9555_CONFIG_PORT0_REG    6 /* 方向配置寄存器0地址 */
-#define XL9555_CONFIG_PORT1_REG    7 /* 方向配置寄存器1地址 */
-
-#define XL9555_ADDR 0X20 /* XL9555器件7位地址-->请看手册（9.1. Device Address） */
-
-#define XL9555_INPUT_REG  0x00
-#define XL9555_OUTPUT_REG 0x02
-#define XL9555_CONFIG_REG 0x06
-
-/* XL9555各个IO的功能 */
-#define TP_RST_IO  0x0001
-#define LCD_RST_IO 0x0002
-#define SD_CS_IO   0x0004
-#define BL_CTR_IO  0x0008
-#define LED1_IO    0x0010
-#define IO5        0x0020
-#define IO6        0x0040
-#define IO7        0x0080
-#define IO8        0x0100
-#define IO9        0x0200
-#define IO10       0x0400
-#define IO11       0x0800
-#define IO12       0x1000
-#define IO13       0x2000
-#define IO14       0x4000
-#define IO15       0x8000
-
-#define LED1(x)                                                          \
-    do                                                                   \
-    {                                                                    \
-        x ? xl9555_pin_write(LED1_IO, 1) : xl9555_pin_write(LED1_IO, 0); \
-    } while (0)
-
-#define LED1_TOGGLE() xl9555_pin_toggle(LED1_IO);
-
-esp_err_t xl9555_init(void);
-int16_t   xl9555_pin_read(uint16_t pin);
-uint16_t  xl9555_pin_write(uint16_t pin, int val);
-esp_err_t xl9555_read_byte(uint8_t reg, uint8_t *data, size_t len);
-esp_err_t xl9555_write_byte(uint8_t reg, uint8_t *data, size_t len);
-esp_err_t xl9555_pin_toggle(uint16_t pin);
+#include "lib_wcs/c_lcd.h"
+#include "lib_wcs/c_xl9555.h"
 
 // -------------------------------------------------------------------------------------------------
-// Implementations
-
-// Cache the current output state to avoid unnecessary I2C reads
-uint16_t g_xl9555_output_cache = 0xFFFF;
-
-esp_err_t xl9555_init(void)
-{
-    Wire.begin(2, 1);  // SDA: 2, SCL: 1 as per your board
-
-    // Configure pins as per your maker's 0xF003 mask:
-    // 0xF003 -> Port 0: 0x03 (bits 0,1 in), Port 1: 0xF0 (bits 4-7 in)
-    uint8_t config[] = {0x03, 0xF0};
-    return xl9555_write_byte(XL9555_CONFIG_REG, config, 2);
-}
-
-uint16_t xl9555_pin_write(uint16_t pin, int val)
-{
-    if (val)
-        g_xl9555_output_cache |= pin;
-    else
-        g_xl9555_output_cache &= ~pin;
-
-    uint8_t data[2] = {(uint8_t)(g_xl9555_output_cache & 0xFF), (uint8_t)((g_xl9555_output_cache >> 8) & 0xFF)};
-
-    xl9555_write_byte(XL9555_OUTPUT_REG, data, 2);
-    return g_xl9555_output_cache;
-}
-
-int16_t xl9555_pin_read(uint16_t pin)
-{
-    uint8_t data[2];
-    if (xl9555_read_byte(XL9555_INPUT_REG, (uint8_t*)data, 2) != ESP_OK)
-        return -1;
-
-    uint16_t status = (data[1] << 8) | data[0];
-    return (status & pin) ? 1 : 0;
-}
-
-esp_err_t xl9555_pin_toggle(uint16_t pin)
-{
-    bool currentState = (g_xl9555_output_cache & pin);
-    xl9555_pin_write(pin, !currentState);
-    return ESP_OK;
-}
-
-esp_err_t xl9555_write_byte(uint8_t reg, uint8_t *data, size_t len)
-{
-    Wire.beginTransmission(XL9555_ADDR);
-    Wire.write(reg);
-    for (size_t i = 0; i < len; i++)
-    {
-        Wire.write(data[i]);
-    }
-    if (Wire.endTransmission() == 0)
-        return ESP_OK;
-    return ESP_FAIL;
-}
-
-esp_err_t xl9555_read_byte(uint8_t reg, uint8_t *data, size_t len)
-{
-    Wire.beginTransmission(XL9555_ADDR);
-    Wire.write(reg);
-    Wire.endTransmission(false);  // Restart
-    Wire.requestFrom((uint8_t)XL9555_ADDR, (uint8_t)len);
-
-    size_t i = 0;
-    while (Wire.available() && i < len)
-    {
-        data[i++] = Wire.read();
-    }
-    return (i == len) ? ESP_OK : ESP_FAIL;
-}
-
+// ------ ST7796 LCD PANEL COMMANDS ----------------------------------------------------------------
 // -------------------------------------------------------------------------------------------------
 
 #define st7796_CMD_RAMCTRL            0xb5
@@ -472,19 +349,18 @@ static esp_err_t panel_st7796_sleep(esp_lcd_panel_t *panel, bool sleep)
 // -------------------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------------------
-
-/* RGB_BL */
-#define LCD_BL(x)                                                            \
-    do                                                                       \
-    {                                                                        \
-        x ? xl9555_pin_write(BL_CTR_IO, 1) : xl9555_pin_write(BL_CTR_IO, 0); \
+// RGB_BL
+#define LCD_BL(x)                                                                                                              \
+    do                                                                                                                         \
+    {                                                                                                                          \
+        x ? ncore::nxl9555::pin_write(ncore::nxl9555::BL_CTR_IO, 1) : ncore::nxl9555::pin_write(ncore::nxl9555::BL_CTR_IO, 0); \
     } while (0)
 
-/* RGB_BL */
-#define LCD_RST(x)                                                             \
-    do                                                                         \
-    {                                                                          \
-        x ? xl9555_pin_write(LCD_RST_IO, 1) : xl9555_pin_write(LCD_RST_IO, 0); \
+// RGB_RST
+#define LCD_RST(x)                                                                                                               \
+    do                                                                                                                           \
+    {                                                                                                                            \
+        x ? ncore::nxl9555::pin_write(ncore::nxl9555::LCD_RST_IO, 1) : ncore::nxl9555::pin_write(ncore::nxl9555::LCD_RST_IO, 0); \
     } while (0)
 
 /* 引脚定义 */
@@ -511,73 +387,63 @@ static esp_err_t panel_st7796_sleep(esp_lcd_panel_t *panel, bool sleep)
 #define GPIO_LCD_D14 GPIO_NUM_5
 #define GPIO_LCD_D15 GPIO_NUM_4
 
-/* 常用颜色值 */
-#define WHITE   0xFFFF /* 白色 */
-#define BLACK   0x0000 /* 黑色 */
-#define RED     0xF800 /* 红色 */
-#define GREEN   0x07E0 /* 绿色 */
-#define BLUE    0x001F /* 蓝色 */
-#define MAGENTA 0XF81F /* 品红色/紫红色 = BLUE + RED */
-#define YELLOW  0XFFE0 /* 黄色 = GREEN + RED */
-#define CYAN    0X07FF /* 青色 = GREEN + BLUE */
+#define WHITE   0xFFFF
+#define BLACK   0x0000
+#define RED     0xF800
+#define GREEN   0x07E0
+#define BLUE    0x001F
+#define MAGENTA 0XF81F
+#define YELLOW  0XFFE0
+#define CYAN    0X07FF
 
-/* 非常用颜色 */
-#define BROWN      0XBC40 /* 棕色 */
-#define BRRED      0XFC07 /* 棕红色 */
-#define GRAY       0X8430 /* 灰色 */
-#define DARKBLUE   0X01CF /* 深蓝色 */
-#define LIGHTBLUE  0X7D7C /* 浅蓝色 */
-#define GRAYBLUE   0X5458 /* 灰蓝色 */
-#define LIGHTGREEN 0X841F /* 浅绿色 */
-#define LGRAY      0XC618 /* 浅灰色(PANNEL),窗体背景色 */
-#define LGRAYBLUE  0XA651 /* 浅灰蓝色(中间层颜色) */
-#define LBBLUE     0X2B12 /* 浅棕蓝色(选择条目的反色) */
+#define BROWN      0XBC40
+#define BRRED      0XFC07
+#define GRAY       0X8430
+#define DARKBLUE   0X01CF
+#define LIGHTBLUE  0X7D7C
+#define GRAYBLUE   0X5458
+#define LIGHTGREEN 0X841F
+#define LGRAY      0XC618
+#define LGRAYBLUE  0XA651
+#define LBBLUE     0X2B12
 
-/* LCD信息结构体 */
 typedef struct _lcd_obj_t
 {
-    uint16_t width;   /* 宽度 */
-    uint16_t height;  /* 高度 */
-    uint16_t pwidth;  /* 宽度 */
-    uint16_t pheight; /* 高度 */
-    uint8_t  dir;     /* 横屏还是竖屏控制：0，竖屏；1，横屏。 */
-    uint16_t wramcmd; /* 开始写gram指令 */
-    uint16_t setxcmd; /* 设置x坐标指令 */
-    uint16_t setycmd; /* 设置y坐标指令 */
-    uint16_t wr;      /* 命令/数据IO */
-    uint16_t cs;      /* 片选IO */
-    uint16_t dc;      /* dc */
-    uint16_t rd;      /* rd */
+    uint16_t width;
+    uint16_t height;
+    uint16_t pwidth;
+    uint16_t pheight;
+    uint8_t  dir;
+    uint16_t wramcmd;
+    uint16_t setxcmd;
+    uint16_t setycmd;
+    uint16_t wr;
+    uint16_t cs;
+    uint16_t dc;
+    uint16_t rd;
 } lcd_obj_t;
 
-/* lcd配置结构体 */
 typedef struct _lcd_config_t
 {
     void                                  *user_ctx;           /* 回调函数传入参数 */
     esp_lcd_panel_io_color_trans_done_cb_t notify_flush_ready; /* 刷新回调函数 */
 } lcd_cfg_t;
 
-/* 导出相关变量 */
 extern lcd_obj_t              lcd_dev;
 extern esp_lcd_panel_handle_t panel_handle; /* LCD句柄 */
-/* lcd相关函数 */
-void lcd_init(lcd_cfg_t lcd_config); /* 初始化lcd */
-void lcd_clear(uint16_t color);      /* 清除屏幕 */
-void lcd_display_dir(uint8_t dir);   /* lcd显示方向设置 */
-void lcd_fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, uint16_t color);
-void lcd_color_fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, uint16_t *color); /* 在指定区域内填充指定颜色块 */
+
+static void lcd_init(lcd_cfg_t lcd_config);
+static void lcd_clear(uint16_t color);
+static void lcd_display_dir(uint8_t dir);
+static void lcd_fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, uint16_t color);
+static void lcd_color_fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, uint16_t *color);
 
 static const char     *LCD_TAG      = "LCD";
 esp_lcd_panel_handle_t panel_handle = NULL; /* LCD句柄 */
 uint32_t               g_back_color = 0xFFFF;
 lcd_obj_t              lcd_dev;
 
-/**
- * @brief       以一种颜色清空LCD屏
- * @param       color 清屏颜色
- * @retval      无
- */
-void lcd_clear(uint16_t color)
+static void lcd_clear(uint16_t color)
 {
     uint16_t       y               = 0;
     const uint32_t MAX_BUFFER_SIZE = 65536;
@@ -610,19 +476,9 @@ void lcd_clear(uint16_t color)
     vTaskDelay(1);
 }
 
-void lcd_draw_point(uint16_t x, uint16_t y, uint16_t color);
+static void lcd_draw_point(uint16_t x, uint16_t y, uint16_t color);
 
-/**
- * @brief       在指定区域内填充单个颜色
- * @note        此函数仅支持uint16_t,RGB565格式的颜色数组填充.
- *              (sx,sy),(ex,ey):填充矩形对角坐标,区域大小为:(ex - sx + 1) * (ey - sy + 1)
- *              注意:sx,ex,不能大于lcd_dev.width - 1; sy,ey,不能大于lcd_dev.height - 1
- * @param       sx,sy:起始坐标
- * @param       ex,ey:结束坐标
- * @param       color:要填充的颜色
- * @retval      无
- */
-void lcd_fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, uint16_t color)
+static void lcd_fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, uint16_t color)
 {
     if (sx >= lcd_dev.width || sy >= lcd_dev.height || ex >= lcd_dev.width || ey >= lcd_dev.height || sx > ex || sy > ey)
     {
@@ -655,26 +511,14 @@ void lcd_fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, uint16_t color
     heap_caps_free(buffer);
 }
 
-/**
- * @brief       在指定区域内填充指定颜色块
- * @note        此函数仅支持uint16_t,RGB565格式的颜色数组填充.
- *              (sx,sy),(ex,ey):填充矩形对角坐标,区域大小为:(ex - sx + 1) * (ey - sy + 1)
- *              注意:sx,ex,不能大于lcd_dev.width - 1; sy,ey,不能大于lcd_dev.height - 1
- * @param       sx,sy:起始坐标
- * @param       ex,ey:结束坐标
- * @param       color:填充的颜色数组首地址
- * @retval      无
- */
-void lcd_color_fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, uint16_t *color)
+static void lcd_color_fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, uint16_t *color)
 {
-    /* 确保坐标在合法范围内 */
     if (sx >= lcd_dev.width || sy >= lcd_dev.height || ex >= lcd_dev.width || ey >= lcd_dev.height || sx > ex || sy > ey)
     {
         ESP_LOGE("LCD_TAG", "Invalid fill area: sx=%d, sy=%d, ex=%d, ey=%d", sx, sy, ex, ey);
         return;
     }
 
-    /* 计算填充区域的宽度和高度 */
     uint16_t width        = ex - sx + 1;
     uint16_t height       = ey - sy + 1;
     uint32_t total_pixels = width * height;
@@ -707,23 +551,18 @@ void lcd_color_fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, uint16_t
     heap_caps_free(buffer);
 }
 
-/**
- * @brief       LCD显示方向设置
- * @param       dir:0,竖屏；1,横屏
- * @retval      无
- */
-void lcd_display_dir(uint8_t dir)
+static void lcd_display_dir(uint8_t dir)
 {
-    lcd_dev.dir = dir; /* 显示方向 */
+    lcd_dev.dir = dir;
 
-    if (lcd_dev.dir == 0) /* 竖屏 */
+    if (lcd_dev.dir == 0)
     {
         lcd_dev.width  = lcd_dev.pwidth;
         lcd_dev.height = lcd_dev.pheight;
         esp_lcd_panel_swap_xy(panel_handle, false);      /* 交换X和Y轴 */
         esp_lcd_panel_mirror(panel_handle, true, false); /* 对屏幕的Y轴不进行镜像处理 */
     }
-    else if (lcd_dev.dir == 1) /* 横屏 */
+    else if (lcd_dev.dir == 1)
     {
         lcd_dev.width  = lcd_dev.pheight;
         lcd_dev.height = lcd_dev.pwidth;
@@ -732,20 +571,9 @@ void lcd_display_dir(uint8_t dir)
     }
 }
 
-/**
- * @brief       lcd画点函数
- * @param       x,y     :写入坐标
- * @param       color   :颜色值
- * @retval      无
- */
-void lcd_draw_point(uint16_t x, uint16_t y, uint16_t color) { esp_lcd_panel_draw_bitmap(panel_handle, x, y, x + 1, y + 1, (uint16_t *)&color); }
+static void lcd_draw_point(uint16_t x, uint16_t y, uint16_t color) { esp_lcd_panel_draw_bitmap(panel_handle, x, y, x + 1, y + 1, (uint16_t *)&color); }
 
-/**
- * @brief       LCD初始化
- * @param       lcd_config:LCD配置信息
- * @retval      无
- */
-void lcd_init(lcd_cfg_t lcd_config)
+static void lcd_init(lcd_cfg_t lcd_config)
 {
     gpio_config_t             gpio_init_struct = {0};
     esp_lcd_panel_io_handle_t io_handle        = NULL;
@@ -850,8 +678,7 @@ namespace ncore
         {
             bool initialize()
             {
-                // initialize xl9555
-                if (xl9555_init() != ESP_OK)
+                if (!nxl9555::init())
                     return false;
 
                 // initialize LCD
@@ -902,8 +729,14 @@ namespace ncore
                 esp_lcd_panel_draw_bitmap(panel_handle, sx, sy, ex + 1, ey + 1, color);
             }
 
-            void led_toggle() { LED1_TOGGLE(); }
-            void led_switch(bool on) { LED1(on); }
+            void led_switch(bool on)
+            {
+                if (on)
+                    nxl9555::pin_write(ncore::nxl9555::LED1_IO, 1);
+                else
+                    nxl9555::pin_write(ncore::nxl9555::LED1_IO, 0);
+            }
+            void led_toggle() { nxl9555::pin_toggle(ncore::nxl9555::LED1_IO); }
 
             void backlight_switch(bool on) { LCD_BL(on ? 1 : 0); }
 
