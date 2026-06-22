@@ -685,6 +685,20 @@ static bool lcd_init(lcd_cfg_t lcd_config)
     return true;
 }
 
+static void lcd_on_off(bool on_off)
+{
+    if (on_off)
+    {  // Turn the display ON
+        esp_lcd_panel_disp_on_off(panel_handle, true);
+        esp_lcd_panel_disp_sleep(panel_handle, false);
+    }
+    else
+    {  // Turn the display OFF
+        esp_lcd_panel_disp_sleep(panel_handle, true);
+        esp_lcd_panel_disp_on_off(panel_handle, false);
+    }
+}
+
 #include "lib_wcs/c_lcd.h"
 
 namespace ncore
@@ -753,8 +767,8 @@ namespace ncore
                 nxl9555::pin_write(ncore::nxl9555::LED1_IO, 0);
         }
         void led_toggle() { nxl9555::pin_toggle(ncore::nxl9555::LED1_IO); }
-
         void backlight_switch(bool on) { LCD_BL(on ? 1 : 0); }
+        void display_power(bool on) { lcd_on_off(on); }
 
     }  // namespace nlcd
 }  // namespace ncore

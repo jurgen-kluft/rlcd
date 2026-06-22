@@ -26,6 +26,9 @@ namespace ncore
         // WCS display has a backlight control pin, which can be used to turn on/off the backlight
         void backlight_switch(bool on);
 
+        // WCS display can be turned on/off
+        void display_power(bool on);
+
     }  // namespace nlcd
 }  // namespace ncore
 
