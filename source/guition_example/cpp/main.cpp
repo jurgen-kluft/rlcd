@@ -1,4 +1,4 @@
-#include "lib_wcs/dummy.h"
+#include "lib_guition/dummy.h"
 
 #include "rcore/c_app.h"
 #include "rcore/c_gpio.h"
@@ -10,9 +10,9 @@
 #include "rcore/c_wire.h"
 #include "ccore/c_random.h"
 
-#include "lib_wcs/c_lcd.h"
-#include "lib_wcs/c_touch.h"
-#include "lib_wcs/c_sdcard.h"
+#include "lib_guition/c_lcd.h"
+#include "lib_guition/c_touch.h"
+#include "lib_guition/c_sdcard.h"
 
 namespace ncore
 {
@@ -94,7 +94,7 @@ namespace ncore
                         ntouch::touch_point_t point = ntouch::tp_get_touch_point(gAppState.gTouchPanel, i);
                         // nlog::printfln("  Point %d: (%d, %d)", va_t(i + 1), va_t(point.x), va_t(point.y));
 
-                        nlcd::draw_rectangle(point.x, point.y, point.x + 1, point.y + 1, 0xF800);  // Draw a red rectangle around the touch point
+                        nlcd::draw_rectangle(point.m_x, point.m_y, point.m_x + 1, point.m_y + 1, 0xF800);  // Draw a red rectangle around the touch point
                         toggle_lcd_fill_time = now_ms;                                             // Reset the fill timer when a touch is detected
                     }
                 }

@@ -16,21 +16,21 @@ namespace ncore
     {
         bool tp_init(touch_panel_t &tp, u16 width, u16 height, bool portrait)
         {
-            tp.width  = width;
-            tp.height = height;
+            tp.m_width  = width;
+            tp.m_height = height;
 
             for (int i = 0; i < TP_CT_MAX_TOUCH; i++)
             {
-                tp.points[i].x = 0;
-                tp.points[i].y = 0;
+                tp.m_points[i].m_x = 0;
+                tp.m_points[i].m_y = 0;
             }
-            tp.touchstatus = 0;
+            tp.m_touchstatus = 0;
 
-            tp.touchtype = portrait ? 0 : 0X01;  // Set landscape/portrait
-            ngt9xxx::init();                     // Initialize the GT9xxx device
-            tp.touchtype |= 0X80;                // Capacitive touchscreen
+            tp.m_touchtype = portrait ? 0 : 0X01;  // Set landscape/portrait
+            ngt9xxx::init();                       // Initialize the GT9xxx device
+            tp.m_touchtype |= 0X80;                // Capacitive touchscreen
 
-            tp.polling_interval = 0;  // Initialize polling interval counter
+            tp.m_polling_interval = 0;  // Initialize polling interval counter
             return true;
         }
 
@@ -48,10 +48,10 @@ namespace ncore
             u8 i   = 0;
             u8 res = 0;
 
-            const u8           max_tps = ngt9xxx::max_tps();
+            const u8 max_tps = ngt9xxx::max_tps();
 
-            tp.polling_interval++;
-            if ((tp.polling_interval % 10) == 0 || tp.polling_interval < 10)  // When idle, check once every 10 scans to reduce CPU usage
+            tp.m_polling_interval++;
+            if ((tp.m_polling_interval % 10) == 0 || tp.m_polling_interval < 10)  // When idle, check once every 10 scans to reduce CPU usage
             {
                 ngt9xxx::read_reg(ngt9xxx::GT9XXX_GSTID_REG, &mode, 1);  // Read touch-point status
 
@@ -65,57 +65,57 @@ namespace ncore
 
                 if ((mode & 0XF) && (num_touch_points <= max_tps))
                 {
-                    const u16 num_touch_points_mask = 0XFFFF << num_touch_points;  // Convert number of points to a bitmask matching tp.touchstatus
-                    tp.touchstatus                  = (~num_touch_points_mask) | cTP_PRES_DOWN | cTP_CATH_PRES;
+                    const u16 num_touch_points_mask = 0XFFFF << num_touch_points;  // Convert number of points to a bitmask matching tp.m_touchstatus
+                    tp.m_touchstatus                = (~num_touch_points_mask) | cTP_PRES_DOWN | cTP_CATH_PRES;
 
                     for (i = 0; i < max_tps; i++)
                     {
-                        if (tp.touchstatus & (1 << i))  // Touch valid?
+                        if (tp.m_touchstatus & (1 << i))  // Touch valid?
                         {
                             ngt9xxx::read_tpx_reg(i, buf, 4);  // Read XY coordinates
 
                             if (tp_is_portrait(tp))  // Portrait
                             {
-                                tp.points[i].x = (buf[1] << 8) | buf[0];  // X coordinate
-                                tp.points[i].y = (buf[3] << 8) | buf[2];  // Y coordinate
+                                tp.m_points[i].m_x = (buf[1] << 8) | buf[0];  // X coordinate
+                                tp.m_points[i].m_y = (buf[3] << 8) | buf[2];  // Y coordinate
                             }
                             else  // Landscape: swap X and Y, and invert Y
                             {
-                                tp.points[i].x = tp.width - (buf[3] << 8) | buf[2];  // Y coordinate
-                                tp.points[i].y = (buf[1] << 8) | buf[0];             // X coordinate
+                                tp.m_points[i].m_x = tp.m_width - (buf[3] << 8) | buf[2];  // Y coordinate
+                                tp.m_points[i].m_y = (buf[1] << 8) | buf[0];               // X coordinate
                             }
                         }
                         else
                         {
-                            tp.points[i].x = 0xffff;  // Invalid point: set to out-of-range value
-                            tp.points[i].y = 0xffff;
+                            tp.m_points[i].m_x = 0xffff;  // Invalid point: set to out-of-range value
+                            tp.m_points[i].m_y = 0xffff;
                         }
 
-                        // ESP_LOGI("GT9XXX", "%d, x=%d,y=%d\r\n", i, tp.points[i].x, tp.points[i].y);
+                        // ESP_LOGI("GT9XXX", "%d, x=%d,y=%d\r\n", i, tp.m_points[i].m_x, tp.m_points[i].m_y);
                     }
 
-                    res                 = 1;
-                    tp.polling_interval = 0;  // After trigger, force at least 10 consecutive scans to improve hit rate
+                    res                   = 1;
+                    tp.m_polling_interval = 0;  // After trigger, force at least 10 consecutive scans to improve hit rate
                 }
             }
 
             if ((mode & 0X8F) == 0X80)  // No touch point pressed
             {
-                if (tp.touchstatus & cTP_PRES_DOWN)  // Was previously pressed
+                if (tp.m_touchstatus & cTP_PRES_DOWN)  // Was previously pressed
                 {
-                    tp.touchstatus &= ~cTP_PRES_DOWN;  // Mark key release
+                    tp.m_touchstatus &= ~cTP_PRES_DOWN;  // Mark key release
                 }
                 else  // Was already not pressed
                 {
-                    tp.points[0].x = 0xffff;
-                    tp.points[0].y = 0xffff;
-                    tp.touchstatus &= 0XE000;  // Clear valid-point flags
+                    tp.m_points[0].m_x = 0xffff;
+                    tp.m_points[0].m_y = 0xffff;
+                    tp.m_touchstatus &= 0XE000;  // Clear valid-point flags
                 }
             }
 
-            if (tp.polling_interval > 240)
+            if (tp.m_polling_interval > 240)
             {
-                tp.polling_interval = 10;  // Restart counting from 10
+                tp.m_polling_interval = 10;  // Restart counting from 10
             }
 
             return res != 0;

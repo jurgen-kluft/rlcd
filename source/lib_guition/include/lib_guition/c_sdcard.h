@@ -1,5 +1,5 @@
-#ifndef __RLCD_WCS_SDCARD_H__
-#define __RLCD_WCS_SDCARD_H__
+#ifndef __RLCD_GUITION_SDCARD_H__
+#define __RLCD_GUITION_SDCARD_H__
 #include "rcore/c_target.h"
 #ifdef USE_PRAGMA_ONCE
     #pragma once
@@ -14,4 +14,4 @@ namespace ncore
     }  // namespace nlcd
 }  // namespace ncore
 
-#endif  // __RLCD_WCS_SDCARD_H__
+#endif  // __RLCD_GUITION_SDCARD_H__
