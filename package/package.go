@@ -4,7 +4,6 @@ import (
 	denv "github.com/jurgen-kluft/ccode/denv"
 	cunittest "github.com/jurgen-kluft/cunittest/package"
 	rcore "github.com/jurgen-kluft/rcore/package"
-	respressif_components "github.com/jurgen-kluft/respressif-components/package"
 )
 
 const (
@@ -16,13 +15,15 @@ func GetPackage() *denv.Package {
 	// dependencies
 	cunittestpkg := cunittest.GetPackage()
 	corepkg := rcore.GetPackage()
-	respressif_componentspkg := respressif_components.GetPackage()
 
 	// main package
 	mainpkg := denv.NewPackage(repo_path, repo_name)
 	mainpkg.AddPackage(corepkg)
 	mainpkg.AddPackage(cunittestpkg)
-	mainpkg.AddPackage(respressif_componentspkg)
+
+	// Display library
+	displayLib := denv.SetupCppLibraryForArduinoEsp32(mainpkg, "lib_display", "display")
+	displayLib.AddDependencies(corepkg.GetMainLib())
 
 	// DWO library
 	dwoLib := denv.SetupCppLibraryForArduinoEsp32(mainpkg, "lib_dwo", "dwo")
@@ -34,9 +35,7 @@ func GetPackage() *denv.Package {
 
 	// GUITION library
 	guitionLib := denv.SetupCppLibraryForArduinoEsp32(mainpkg, "lib_guition", "guition")
-	guitionLib.AddDependency(respressif_componentspkg.GetLibrary("library_esp_lcd_st7701"))
-	guitionLib.AddDependency(respressif_componentspkg.GetLibrary("library_esp_lcd_panel_io_additions"))
-	guitionLib.AddDependency(respressif_componentspkg.GetLibrary("library_esp_lcd_touch_gt911"))
+	guitionLib.AddDependency(displayLib)
 	guitionLib.AddDependencies(corepkg.GetMainLib())
 
 	// Example applications
@@ -50,6 +49,7 @@ func GetPackage() *denv.Package {
 	mainpkg.AddMainApp(wcsExample)
 	mainpkg.AddMainApp(guitionExample)
 	// Add libraries to the main package
+	mainpkg.AddLibrary(displayLib)
 	mainpkg.AddLibrary(dwoLib)
 	mainpkg.AddLibrary(wcsLib)
 	mainpkg.AddLibrary(guitionLib)

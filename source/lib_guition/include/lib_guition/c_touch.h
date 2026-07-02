@@ -11,10 +11,21 @@ namespace ncore
     {
 #define TP_CT_MAX_TOUCH 5  // Number of points supported by capacitive touch, fixed at 5 points
 
-#define ROTATION_LEFT     (u8)0
-#define ROTATION_INVERTED (u8)1
-#define ROTATION_RIGHT    (u8)2
-#define ROTATION_NORMAL   (u8)3
+        enum erotate_t
+        {
+            cTP_ROTATE_0   = 0,
+            cTP_ROTATE_90  = 1,
+            cTP_ROTATE_180 = 2,
+            cTP_ROTATE_270 = 3
+        };
+
+        enum emirror_t
+        {
+            cTP_MIRROR_NONE = 0,
+            cTP_MIRROR_X    = 1,
+            cTP_MIRROR_Y    = 2,
+            cTP_MIRROR_XY   = 3
+        };
 
         struct touch_point_t
         {
@@ -28,30 +39,27 @@ namespace ncore
         {
             u16           m_width;
             u16           m_height;
-            u8            m_isLargeDetect;
-            u8            m_touches;
-            u8            m_rotation;
-            u8            m_reserved;
+            u16           m_touches;
+            u8            m_rotation;  // 0 = normal, 1 = rotate 90, 2 = rotate 180, 3 = rotate 270
+            u8            m_mirror;    // 0 = normal, 1 = mirror X, 2 = mirror Y, 3 = mirror XY
+            u16           m_touch_status;
             touch_point_t m_points[TP_CT_MAX_TOUCH];
-            u8            m_configBuf[256 - 38];
+            u64           m_polling_interval;
         };
 
-        static inline bool          tp_is_pressed(const touch_panel_t& tp) { return (tp.m_touches > 0); }
-        static inline bool          tp_is_portrait(const touch_panel_t& tp) { return (tp.m_rotation == ROTATION_NORMAL || tp.m_rotation == ROTATION_INVERTED); }
-        static inline bool          tp_is_landscape(const touch_panel_t& tp) { return (tp.m_rotation == ROTATION_LEFT || tp.m_rotation == ROTATION_RIGHT); }
-        static inline bool          tp_is_point_active(const touch_panel_t& tp) { return (tp_is_pressed(tp) && tp.m_touches > 0); }
-        static inline u8            tp_get_touch_point_num(const touch_panel_t& tp) { return tp.m_touches; }
-        static inline bool          tp_is_capacitive(const touch_panel_t& tp) { return true; }
-        static inline bool          tp_is_valid_touch_point(const touch_panel_t& tp, u8 index) { return (index < TP_CT_MAX_TOUCH) && (tp.m_touches & (1 << index)) != 0; }
-        static inline touch_point_t tp_get_touch_point(const touch_panel_t& tp, u8 index) { return tp_is_valid_touch_point(tp, index) ? tp.m_points[index] : touch_point_t{0, 0, 0xFFFF, 0xFFFF}; }
+        static inline bool                 tp_is_pressed(const touch_panel_t& tp) { return (tp.m_touches > 0); }
+        static inline bool                 tp_is_point_active(const touch_panel_t& tp) { return (tp_is_pressed(tp) && tp.m_touches > 0); }
+        static inline u8                   tp_get_touch_point_num(const touch_panel_t& tp) { return tp.m_touches; }
+        static inline bool                 tp_is_valid_touch_point(const touch_panel_t& tp, u8 index) { return (index < TP_CT_MAX_TOUCH) && (tp.m_touches & (1 << index)) != 0; }
+        static inline const touch_point_t* tp_get_touch_point(const touch_panel_t& tp, u8 index) { return tp_is_valid_touch_point(tp, index) ? &tp.m_points[index] : nullptr; }
 
-        bool tp_init(touch_panel_t& tp, u16 width, u16 height, bool portrait = true);
+        bool tp_init(touch_panel_t& tp, u16 width, u16 height, erotate_t rotation = cTP_ROTATE_0, emirror_t mirror = cTP_MIRROR_NONE);
 
         // Scan touchscreen (polling mode)
         // return: current touch status
         //   0: no touch
         //   1: touch detected
-        bool tp_scan(touch_panel_t& tp, u8 mode = 0);
+        bool tp_scan(touch_panel_t& tp, u64 now);
 
     }  // namespace ntouch
 }  // namespace ncore

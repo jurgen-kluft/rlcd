@@ -92,9 +92,9 @@ static esp_err_t xl9555_read_reg(device_t *dev, uint8_t reg, uint8_t *data, size
     return i2c_master_transmit_receive(dev->dev_handle, &reg, 1, data, len, -1);
 }
 
-#define IIC_NUM_PORT       I2C_NUM_0        /* IIC0 */
-#define IIC_SDA_GPIO_PIN   GPIO_NUM_2       /* IIC0_SDA引脚 */
-#define IIC_SCL_GPIO_PIN   GPIO_NUM_1       /* IIC0_SCL引脚 */
+#define IIC_NUM_PORT     I2C_NUM_0  /* IIC0 */
+#define IIC_SDA_GPIO_PIN GPIO_NUM_2 /* IIC0_SDA引脚 */
+#define IIC_SCL_GPIO_PIN GPIO_NUM_1 /* IIC0_SCL引脚 */
 
 esp_err_t xl9555_init(void)
 {

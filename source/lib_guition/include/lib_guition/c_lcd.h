@@ -18,7 +18,7 @@ namespace ncore
 
         void led_toggle();
         void led_switch(bool on);
-        
+
         // display has a backlight control pin, which can be used to turn on/off the backlight
         void backlight_switch(bool on);
 

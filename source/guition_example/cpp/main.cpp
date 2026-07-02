@@ -1,5 +1,3 @@
-#include "lib_guition/dummy.h"
-
 #include "rcore/c_app.h"
 #include "rcore/c_gpio.h"
 #include "rcore/c_timer.h"
@@ -14,95 +12,91 @@
 #include "lib_guition/c_touch.h"
 #include "lib_guition/c_sdcard.h"
 
-namespace ncore
-{
-    struct state_app_t
-    {
-        xor_random_t          gRandom;      // XORShift random number generator for any randomization needs
-        ntouch::touch_panel_t gTouchPanel;  // Touch panel state
-    };
-    state_app_t gAppState;
-
-}  // namespace ncore
+#include "esp_log.h"
 
 namespace ncore
 {
     namespace napp
     {
-        void wakeup(state_t* state, ncore::nwakeup::reason_t reason)
+        void wakeup(state_t *state, ncore::nwakeup::reason_t reason)
         {
             // Handle wakeup reasons if needed (e.g., from deep sleep)
         }
 
-        ntimer::periodic_task_t gBlinkLedTask;
+        // ntimer::periodic_task_t gBlinkLedTask;
 
-        void presetup(state_t* state) {}
-
-        void setup(state_t* state)
+        void setup(state_t *state)
         {
             // Time critical setup before WiFi and other components are initialized can be done here
 
-            ntimer::init_periodic_task(&gBlinkLedTask, 1000, nullptr, [](void* user) { nlcd::led_toggle(); });
+            // ntimer::init_periodic_task(&gBlinkLedTask, 1000, nullptr, [](void* user) { nlcd::led_toggle(); });
+            nlog::log_info("main", "setup");
+
+            // Init touch device
+            // touch_init();
 
             if (nlcd::initialize() == false)
             {
-                nlog::println("Failed to initialize LCD");
+                nlog::log_error("main", "Failed to initialize LCD");
             }
             else
             {
+                nlog::log_info("main", "LCD initialized successfully");
+
                 if (ntouch::tp_init(gAppState.gTouchPanel, nlcd::width(), nlcd::height()) == false)
                 {
-                    nlog::println("Failed to initialize touch panel");
-                }
-
-                if (nlcd::sdcard_initialize() == false)
-                {
-                    nlog::println("Failed to initialize SD card");
+                    nlog::log_error("main", "Failed to initialize touch panel");
                 }
                 else
                 {
-                    nlog::println("SD card initialized successfully");
-
-                    u64 total_bytes, free_bytes;
-                    if (nlcd::sdcard_get_usage(&total_bytes, &free_bytes))
-                    {
-                        nlog::printfln("SD card total size: %.2f MB", va_t(total_bytes / (1024.0 * 1024.0)));
-                        nlog::printfln("SD card free space: %.2f MB", va_t(free_bytes / (1024.0 * 1024.0)));
-                    }
+                    nlog::log_info("main", "Touch panel initialized successfully");
                 }
 
-                nlog::println("Setup complete");
+                // if (nlcd::sdcard_initialize())
+                // {
+                //     u64 total_bytes, free_bytes;
+                //     if (nlcd::sdcard_get_usage(&total_bytes, &free_bytes))
+                //     {
+                //         nlog::printfln("SD card total size: %.2f MB", va_t(total_bytes / (1024.0 * 1024.0)));
+                //         nlog::printfln("SD card free space: %.2f MB", va_t(free_bytes / (1024.0 * 1024.0)));
+                //     }
+                // }
             }
         }
 
         static u64 toggle_lcd_fill_time = 0;
 
-        void tick(state_t* state)
+        void tick(state_t *state)
         {
-            u64 now_ms = ntimer::millis();
+            const u64 now_ms = ntimer::millis();
 
-            ntimer::tick_periodic_task(&gBlinkLedTask, now_ms);
+            // if (touch_touched(now_ms))
+            // {
+            //     nlog::log_infof("main", "Touch detected at: (%d, %d)", va_list_t(va_t(touch_last_x), va_t(touch_last_y)));
+            //     toggle_lcd_fill_time = now_ms;  // Reset the fill timer when a touch is detected
+            // }
 
-            if (ntouch::tp_scan(gAppState.gTouchPanel, 0))
+            if (ntouch::tp_scan(gAppState.gTouchPanel, now_ms))
             {
-                u8 num_points = ntouch::tp_get_touch_point_num(gAppState.gTouchPanel);
-                nlog::printfln("Touch detected with %d point(s)", va_t(num_points));
+                const u8 num_points = ntouch::tp_get_touch_point_num(gAppState.gTouchPanel);
+
+                nlog::log_infof("main", "Touch detected: %u points", va_list_t(va_t(num_points)));
                 for (u8 i = 0; i < num_points; i++)
                 {
-                    if (ntouch::tp_is_valid_touch_point(gAppState.gTouchPanel, i))
+                    const ntouch::touch_point_t *point = ntouch::tp_get_touch_point(gAppState.gTouchPanel, i);
+                    if (point != nullptr)
                     {
-                        ntouch::touch_point_t point = ntouch::tp_get_touch_point(gAppState.gTouchPanel, i);
-                        // nlog::printfln("  Point %d: (%d, %d)", va_t(i + 1), va_t(point.x), va_t(point.y));
+                        nlog::log_infof("main", "Point %u: (%u, %u, %u)", va_list_t(va_t(i + 1), va_t(point->m_x), va_t(point->m_y), va_t(point->m_size)));
 
-                        nlcd::draw_rectangle(point.m_x, point.m_y, point.m_x + 1, point.m_y + 1, 0xF800);  // Draw a red rectangle around the touch point
-                        toggle_lcd_fill_time = now_ms;                                             // Reset the fill timer when a touch is detected
+                        // nlcd::draw_rectangle(point->m_x, point->m_y, point->m_x + 1, point->m_y + 1, 0xF800);  // Draw a red rectangle around the touch point
                     }
                 }
+                toggle_lcd_fill_time = now_ms;  // Reset the fill timer when a touch is detected
             }
 
             if (now_ms - toggle_lcd_fill_time > 2000)
             {
-                nlog::println("Filling random area with random color");
+                nlog::log_info("main", "Filling random area with random color");
 
                 // Fill a random area with a random color every 2 seconds
                 u16 color = (u16)g_random_u32(&gAppState.gRandom, 16);  // Random RGB565 color
@@ -111,7 +105,7 @@ namespace ncore
                 u16 ex    = sx + (g_random_u32_range(&gAppState.gRandom, 0, 40) + 10);  // Random width between 10 and 50 pixels
                 u16 ey    = sy + (g_random_u32_range(&gAppState.gRandom, 0, 40) + 10);  // Random height between 10 and 50 pixels
 
-                nlcd::draw_rectangle(sx, sy, ex, ey, color);
+                // nlcd::draw_rectangle(sx, sy, ex, ey, color);
                 toggle_lcd_fill_time = now_ms;
             }
         }

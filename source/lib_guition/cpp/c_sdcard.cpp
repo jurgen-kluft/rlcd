@@ -2,6 +2,7 @@
 
 #include "SPI.h"
 #include "SD.h"
+#include "FS.h"
 
 #include "rcore/c_log.h"
 #include "rcore/c_gpio.h"
@@ -32,16 +33,16 @@ namespace ncore
 
             if (!SD.begin(SD_CS, SPI, 1000000))
             {
-                nlog::printfln("SDCard: Failed to mount SD card");
+                nlog::println("SDCard: Failed to mount SD card");
                 return false;
             }
             uint8_t cardType = SD.cardType();
             if (cardType == CARD_NONE)
             {
-                nlog::printfln("SDCard: No SD card attached");
+                nlog::println("SDCard: No SD card attached");
                 return false;
             }
-            nlog::printfln("SDCard: SD Card initialized.");
+            nlog::println("SDCard: SD Card initialized.");
             return true;
         }
 
@@ -50,7 +51,7 @@ namespace ncore
             uint8_t cardType = SD.cardType();
             if (cardType == CARD_NONE)
             {
-                nlog::printfln("SDCard: No SD card attached");
+                nlog::println("SDCard: No SD card attached");
                 return false;
             }
 

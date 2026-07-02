@@ -454,7 +454,7 @@ static void lcd_clear(uint16_t color)
     uint16_t *buffer = (uint16_t *)heap_caps_malloc(lcd_dev.width * block_height * sizeof(uint16_t), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
     if (NULL == buffer)
     {
-        ESP_LOGE(TAG, "Memory for bitmap is not enough");
+        ESP_LOGE(LCD_TAG, "Memory for bitmap is not enough");
         return;
     }
 
