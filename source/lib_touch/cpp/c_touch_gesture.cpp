@@ -1,35 +1,35 @@
 #include "ccore/c_math.h"
 
-#include "rlcd/c_touch_gesture.h"
+#include "lib_touch/c_touch_gesture.h"
 
 namespace ncore
 {
     namespace ntouch
     {
         // Evaluate swipe direction based on the movement vector and number of fingers, returns GT_NONE if movement doesn't meet swipe thresholds
-        static gesture_type_t s_evaluate_swipe(egesture_type_t& tg, i32 dx, i32 dy, i32 fingers)
+        static egesture_type_t s_evaluate_swipe(touch_gesture_t& tg, i32 dx, i32 dy, i32 fingers)
         {
             if (math::abs(dx) > math::abs(dy))
             {
                 if (math::abs(dx) >= tg.m_cfg.m_swipeThresholdPixels)
                 {
-                    gesture_type_t gt = (fingers == 2) ? GT_TWO_FINGER_SWIPE_LEFT : GT_ONE_FINGER_SWIPE_LEFT;
-                    return (dx > 0) ? (gesture_type_t)(gt + 1) : gt;
+                    egesture_type_t gt = (fingers == 2) ? GT_TWO_FINGER_SWIPE_LEFT : GT_ONE_FINGER_SWIPE_LEFT;
+                    return (dx > 0) ? (egesture_type_t)(gt + 1) : gt;
                 }
             }
             else
             {
                 if (math::abs(dy) >= tg.m_cfg.m_swipeThresholdPixels)
                 {
-                    gesture_type_t gt = (fingers == 2) ? GT_TWO_FINGER_SWIPE_UP : GT_ONE_FINGER_SWIPE_UP;
-                    return (dy > 0) ? (gesture_type_t)(gt + 1) : gt;
+                    egesture_type_t gt = (fingers == 2) ? GT_TWO_FINGER_SWIPE_UP : GT_ONE_FINGER_SWIPE_UP;
+                    return (dy > 0) ? (egesture_type_t)(gt + 1) : gt;
                 }
             }
             return GT_NONE;
         }
 
         // Constructor copies configuration settings
-        void init_touch_gesture(egesture_type_t& tg, gesture_config_t const& config)
+        void init_touch_gesture(touch_gesture_t& tg, gesture_config_t const& config)
         {
             tg.m_cfg                = (config);
             tg.m_touchStartTime     = (0);
@@ -42,9 +42,9 @@ namespace ncore
             tg.m_lastP2             = {0, 0};
         }
 
-        gesture_type_t update_touch_gesture(egesture_type_t& tg, u64 now_ms, bool p1_present, touch_point_t const& p1, bool p2_present, touch_point_t const& p2)
+        egesture_type_t update_touch_gesture(touch_gesture_t& tg, u64 now_ms, bool p1_present, touch_point_t const& p1, bool p2_present, touch_point_t const& p2)
         {
-            gesture_type_t detectedGesture = GT_NONE;
+            egesture_type_t detectedGesture = GT_NONE;
 
             // 1. Capture Touch Initial State
             if ((p1_present || p2_present) && !tg.m_isTracking)
@@ -114,9 +114,9 @@ namespace ncore
             return detectedGesture;
         }
 
-        touch_point_t get_single_tap_location(egesture_type_t& tg) { return tg.m_lastP1; }
-        touch_point_t get_double_tap_location(egesture_type_t& tg) { return tg.m_lastP1; }
-        void          get_swipe_vector(egesture_type_t& tg, touch_point_t& from, touch_point_t& to)
+        touch_point_t get_single_tap_location(touch_gesture_t& tg) { return tg.m_lastP1; }
+        touch_point_t get_double_tap_location(touch_gesture_t& tg) { return tg.m_lastP1; }
+        void          get_swipe_vector(touch_gesture_t& tg, touch_point_t& from, touch_point_t& to)
         {
             from = tg.m_startP1;
             to   = tg.m_lastP1;
@@ -128,7 +128,7 @@ namespace ncore
             return (i32)math::sqrtf(static_cast<f32>(dx * dx + dy * dy));
         }
 
-        const char* to_string(gesture_type_t gesture)
+        const char* to_string(egesture_type_t gesture)
         {
             switch (gesture)
             {

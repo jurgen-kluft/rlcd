@@ -25,6 +25,10 @@ func GetPackage() *denv.Package {
 	displayLib := denv.SetupCppLibraryForArduinoEsp32(mainpkg, "lib_display", "display")
 	displayLib.AddDependencies(corepkg.GetMainLib())
 
+	// Touch library
+	touchLib := denv.SetupCppLibraryForArduinoEsp32(mainpkg, "lib_touch", "touch")
+	touchLib.AddDependencies(corepkg.GetMainLib())
+
 	// DWO library
 	dwoLib := denv.SetupCppLibraryForArduinoEsp32(mainpkg, "lib_dwo", "dwo")
 	dwoLib.AddDependencies(corepkg.GetMainLib())
@@ -36,6 +40,7 @@ func GetPackage() *denv.Package {
 	// GUITION library
 	guitionLib := denv.SetupCppLibraryForArduinoEsp32(mainpkg, "lib_guition", "guition")
 	guitionLib.AddDependency(displayLib)
+	guitionLib.AddDependency(touchLib)
 	guitionLib.AddDependencies(corepkg.GetMainLib())
 
 	// Example applications
@@ -50,6 +55,7 @@ func GetPackage() *denv.Package {
 	mainpkg.AddMainApp(guitionExample)
 	// Add libraries to the main package
 	mainpkg.AddLibrary(displayLib)
+	mainpkg.AddLibrary(touchLib)
 	mainpkg.AddLibrary(dwoLib)
 	mainpkg.AddLibrary(wcsLib)
 	mainpkg.AddLibrary(guitionLib)

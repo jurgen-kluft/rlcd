@@ -62,7 +62,7 @@ namespace ncore
         // return: current touch status
         //   0: no touch
         //   1: touch detected
-        bool tp_scan(touch_panel_t& tp, u8 mode = 0);
+        bool tp_scan(touch_panel_t& tp, u64 now_ms);
 
     }  // namespace ntouch
 }  // namespace ncore

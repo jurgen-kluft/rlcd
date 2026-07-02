@@ -9,7 +9,8 @@ namespace ncore
 {
     namespace ntouch
     {
-#define TP_CT_MAX_TOUCH 5  // Number of points supported by capacitive touch, fixed at 5 points
+        // Number of points supported by capacitive touch, fixed at 5 points
+        const u8 TP_CT_MAX_TOUCH = 5;
 
         enum erotate_t
         {
@@ -53,18 +54,18 @@ namespace ncore
             u8    m_mirror;               // 0 = normal, 1 = mirror X, 2 = mirror Y, 3 = mirror XY
             u64   m_polling_interval_ms;  // Polling interval in milliseconds
             void* m_touch_panel;          // Pointer to the touch panel driver instance
-            bool (*m_touch_panel_scan_fn)(touch_t& tp, u64 now, touch_point_t* points, u8* touches);
+            bool (*m_touch_panel_scan_fn)(touch_t& tp, touch_point_t* points, u8 max_touches, u8* num_touches);
         };
 
-        // Initialize touchscreen 
+        // Initialize touchscreen
         // Note: don't call this directly, call the touch_init of a specific touch panel driver
         void touch_init(touch_t& tp, u16 width, u16 height, u64 polling_interval_ms, erotate_t rotation, emirror_t mirror);
 
         // Scan touchscreen (polling mode)
         // return: current touch status
-        //   false: no touch
-        //   true: touch detected
-        bool touch_scan(touch_t& tp, u64 now, touch_point_t* points, u8* touches);
+        //   false: no scan available
+        //   true: scan available, touches updated
+        bool touch_scan(touch_t& tp, u64 now_ms, touch_point_t* points, u8 max_touches, u8* num_touches);
 
     }  // namespace ntouch
 }  // namespace ncore

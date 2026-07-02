@@ -42,11 +42,12 @@ namespace ncore
         // return: current touch status
         //   0: no touch
         //   1: touch detected
-        bool tp_scan(touch_panel_t &tp, u8 mode)
+        bool tp_scan(touch_panel_t &tp, u64 now_ms)
         {
             u8 buf[4];
             u8 i   = 0;
             u8 res = 0;
+            u8 mode = 0;
 
             const u8 max_tps = ngt9xxx::max_tps();
 
