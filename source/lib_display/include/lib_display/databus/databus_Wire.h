@@ -1,7 +1,7 @@
 // Databus Adapter for the Arduino Wire bus (I2C bus)
 
-#ifndef _Arduino_Wire_H_
-#define _Arduino_Wire_H_
+#ifndef __RLCD_LIBDISPLAY_Wire_H__
+#define __RLCD_LIBDISPLAY_Wire_H__
 
 #include "lib_display/display_databus.h"
 #include <Wire.h>
@@ -47,4 +47,4 @@ protected:
 private:
 };
 
-#endif  // _Arduino_Wire_H_
+#endif // __RLCD_LIBDISPLAY_Wire_H__

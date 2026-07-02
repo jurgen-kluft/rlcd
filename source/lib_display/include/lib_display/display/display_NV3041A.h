@@ -1,5 +1,5 @@
-#ifndef _ARDUINO_NV3041A_H_
-#define _ARDUINO_NV3041A_H_
+#ifndef __RLCD_LIBDISPLAY_NV3041A_H__
+#define __RLCD_LIBDISPLAY_NV3041A_H__
 
 #include "lib_display/display_gfx.h"
 #include "lib_display/display_tft.h"

@@ -1,8 +1,8 @@
 #include "lib_display/display_databus.h"
 #if !defined(LITTLE_FOOT_PRINT)
 
-    #ifndef _ARDUINO_ILI9488_3BIT_H_
-        #define _ARDUINO_ILI9488_3BIT_H_
+    #ifndef __RLCD_LIBDISPLAY_ILI9488_3BIT_H__
+        #define __RLCD_LIBDISPLAY_ILI9488_3BIT_H__
 
         #include "lib_display/display/display_ILI9488.h"
 
@@ -33,6 +33,6 @@ protected:
 private:
 };
 
-    #endif  // _ARDUINO_ILI9488_3BIT_H_
+    #endif // __RLCD_LIBDISPLAY_ILI9488_3BIT_H__
 
 #endif  // !defined(LITTLE_FOOT_PRINT)

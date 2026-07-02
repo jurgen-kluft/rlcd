@@ -2,8 +2,8 @@
  * start rewrite from:
  * https://github.com/adafruit/Adafruit-GFX-Library.git
  */
-#ifndef _ARDUINO_DATABUS_H_
-#define _ARDUINO_DATABUS_H_
+#ifndef __RLCD_LIBDISPLAY_DATABUS_H__
+#define __RLCD_LIBDISPLAY_DATABUS_H__
 
 #include <Arduino.h>
 
@@ -306,4 +306,4 @@ protected:
     int8_t  _dataMode;
 };
 
-#endif  // _ARDUINO_DATABUS_H_
+#endif // __RLCD_LIBDISPLAY_DATABUS_H__

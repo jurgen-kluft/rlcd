@@ -1,7 +1,7 @@
 #ifdef RTL8722DM
 
-    #ifndef _ARDUINO_RTLPAR8_H_
-        #define _ARDUINO_RTLPAR8_H_
+    #ifndef __RLCD_LIBDISPLAY_RTLPAR8_H__
+        #define __RLCD_LIBDISPLAY_RTLPAR8_H__
 
         #include "lib_display/display_databus.h"
 
@@ -59,6 +59,6 @@ private:
     uint32_t _xset_mask[256];
 };
 
-    #endif  // _ARDUINO_RTLPAR8_H_
+    #endif // __RLCD_LIBDISPLAY_RTLPAR8_H__
 
 #endif  // #ifdef RTL8722DM

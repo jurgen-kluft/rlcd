@@ -2,8 +2,8 @@
 
 #if defined(ESP32) && (CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3)
 
-    #ifndef _ARDUINO_ESP32S2PAR8_H_
-        #define _ARDUINO_ESP32S2PAR8_H_
+    #ifndef __RLCD_LIBDISPLAY_ESP32S2PAR8_H__
+        #define __RLCD_LIBDISPLAY_ESP32S2PAR8_H__
 
 class Arduino_ESP32S2PAR8 : public Arduino_DataBus
 {
@@ -56,6 +56,6 @@ private:
     uint32_t  _dataClrMask;
 };
 
-    #endif  // _ARDUINO_ESP32S2PAR8_H_
+    #endif // __RLCD_LIBDISPLAY_ESP32S2PAR8_H__
 
 #endif  // #if defined(ESP32) && (CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3)

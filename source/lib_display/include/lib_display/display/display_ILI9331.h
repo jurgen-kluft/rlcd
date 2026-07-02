@@ -3,8 +3,8 @@
  * https://github.com/adafruit/Adafruit-GFX-Library.git
  * https://github.com/adafruit/Adafruit_ILI9331.git
  */
-#ifndef _ARDUINO_ILI9331_H_
-#define _ARDUINO_ILI9331_H_
+#ifndef __RLCD_LIBDISPLAY_ILI9331_H__
+#define __RLCD_LIBDISPLAY_ILI9331_H__
 
 #include "lib_display/display_gfx.h"
 #include "lib_display/display_tft.h"

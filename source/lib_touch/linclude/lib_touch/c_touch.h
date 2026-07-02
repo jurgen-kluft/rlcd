@@ -56,6 +56,8 @@ namespace ncore
             bool (*m_touch_panel_scan_fn)(touch_t& tp, u64 now, touch_point_t* points, u8* touches);
         };
 
+        // Initialize touchscreen 
+        // Note: don't call this directly, call the touch_init of a specific touch panel driver
         void touch_init(touch_t& tp, u16 width, u16 height, u64 polling_interval_ms, erotate_t rotation, emirror_t mirror);
 
         // Scan touchscreen (polling mode)

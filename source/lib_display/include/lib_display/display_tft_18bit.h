@@ -2,8 +2,8 @@
  * start rewrite from:
  * https://github.com/adafruit/Adafruit-GFX-Library.git
  */
-#ifndef _ARDUINO_TFT_18BIT_H_
-#define _ARDUINO_TFT_18BIT_H_
+#ifndef __RLCD_LIBDISPLAY_TFT_18BIT_H__
+#define __RLCD_LIBDISPLAY_TFT_18BIT_H__
 
 #include "lib_display/display_databus.h"
 #include "lib_display/display_gfx.h"

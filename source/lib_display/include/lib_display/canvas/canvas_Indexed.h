@@ -1,8 +1,8 @@
 #include "lib_display/display_databus.h"
 #if !defined(LITTLE_FOOT_PRINT)
 
-    #ifndef _ARDUINO_CANVAS_INDEXED_H_
-        #define _ARDUINO_CANVAS_INDEXED_H_
+    #ifndef __RLCD_LIBDISPLAY_CANVAS_INDEXED_H__
+        #define __RLCD_LIBDISPLAY_CANVAS_INDEXED_H__
 
         #include "lib_display/display_gfx.h"
 
@@ -55,6 +55,6 @@ protected:
 private:
 };
 
-    #endif  // _ARDUINO_CANVAS_INDEXED_H_
+    #endif // __RLCD_LIBDISPLAY_CANVAS_INDEXED_H__
 
 #endif  // !defined(LITTLE_FOOT_PRINT)

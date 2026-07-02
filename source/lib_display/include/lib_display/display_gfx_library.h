@@ -1,5 +1,5 @@
-#ifndef _ARDUINO_GFX_LIBRARIES_H_
-#define _ARDUINO_GFX_LIBRARIES_H_
+#ifndef __RLCD_LIBDISPLAY_GFX_LIBRARIES_H__
+#define __RLCD_LIBDISPLAY_GFX_LIBRARIES_H__
 
 #include "lib_display/display_databus.h"
 #include "lib_display/databus/databus_AVRPAR8.h"
@@ -333,4 +333,4 @@
 Arduino_DataBus *create_default_Arduino_DataBus();
 Arduino_GFX     *create_default_Arduino_GFX();
 
-#endif  // _ARDUINO_GFX_LIBRARIES_H_
+#endif // __RLCD_LIBDISPLAY_GFX_LIBRARIES_H__

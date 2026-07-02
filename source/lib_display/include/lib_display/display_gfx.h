@@ -2,8 +2,8 @@
  * start rewrite from:
  * https://github.com/adafruit/Adafruit-GFX-Library.git
  */
-#ifndef _ARDUINO_GFX_H_
-#define _ARDUINO_GFX_H_
+#ifndef __RLCD_LIBDISPLAY_GFX_H__
+#define __RLCD_LIBDISPLAY_GFX_H__
 
 #include "lib_display/display_draw.h"
 #include "lib_display/display_databus.h"
@@ -577,4 +577,4 @@ protected:
     int16_t *_roundMaxX;
 };
 
-#endif  // _ARDUINO_GFX_H_
+#endif // __RLCD_LIBDISPLAY_GFX_H__

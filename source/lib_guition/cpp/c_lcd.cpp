@@ -5,6 +5,8 @@
 #include "rcore/c_log.h"
 
 #include "lib_guition/c_lcd.h"
+#include "lib_display/c_display.h"
+#include "lib_touch/c_touch_gt911.h"
 
 #define GUITION_LCD_H_RES 480
 #define GUITION_LCD_V_RES 480

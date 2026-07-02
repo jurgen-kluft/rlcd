@@ -5,8 +5,8 @@
  * Data Sheet:
  * http://read.pudn.com/downloads648/ebook/2620902/NT39125.pdf
  */
-#ifndef _ARDUINO_NT39125_H_
-#define _ARDUINO_NT39125_H_
+#ifndef __RLCD_LIBDISPLAY_NT39125_H__
+#define __RLCD_LIBDISPLAY_NT39125_H__
 
 #include "lib_display/display_gfx.h"
 #include "lib_display/display_tft.h"
@@ -175,4 +175,4 @@ protected:
 private:
 };
 
-#endif  // _ARDUINO_NT39125_H_
+#endif // __RLCD_LIBDISPLAY_NT39125_H__

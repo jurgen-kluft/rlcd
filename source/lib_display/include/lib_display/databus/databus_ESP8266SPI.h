@@ -4,8 +4,8 @@
  */
 #ifdef ESP8266
 
-    #ifndef _ARDUINO_ESP8266SPI_H_
-        #define _ARDUINO_ESP8266SPI_H_
+    #ifndef __RLCD_LIBDISPLAY_ESP8266SPI_H__
+        #define __RLCD_LIBDISPLAY_ESP8266SPI_H__
 
         #include "lib_display/display_databus.h"
 
@@ -55,6 +55,6 @@ private:
     volatile uint32_t *spi1Reg32 = (volatile uint32_t *)(0x60000000 + 0x140);  // address of SPI1W0
 };
 
-    #endif  // _ARDUINO_ESP8266SPI_H_
+    #endif // __RLCD_LIBDISPLAY_ESP8266SPI_H__
 
 #endif  // #ifdef ESP8266

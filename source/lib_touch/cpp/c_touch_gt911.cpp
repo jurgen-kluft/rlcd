@@ -1,12 +1,17 @@
 #include "Arduino.h"
 #include "Wire.h"
 
+#include "rcore/c_endian.h"
+#include "rcore/c_memory.h"
 #include "lib_touch/c_touch.h"
 
 namespace ncore
 {
     namespace ntouch
     {
+        namespace ngt911
+        {
+
 #define ROTATION_LEFT     (u8)0
 #define ROTATION_INVERTED (u8)1
 #define ROTATION_RIGHT    (u8)2
@@ -75,169 +80,171 @@ namespace ncore
 #define GT911_POINT_5          (u16)0X816F
 #define GT911_POINTS_REG       {GT911_POINT_1, GT911_POINT_2, GT911_POINT_3, GT911_POINT_4, GT911_POINT_5}
 
-        namespace nwire
-        {
-            static void s_writeByteData(Wire* wire, u8 addr, u16 reg, u8 val)
+            namespace nwire
             {
-                wire->beginTransmission(addr);
-                wire->write(highByte(reg));
-                wire->write(lowByte(reg));
-                wire->write(val);
-                wire->endTransmission();
-            }
-
-            static u8 s_readByteData(Wire* wire, u8 addr, u16 reg)
-            {
-                u8 x;
-                wire->beginTransmission(addr);
-                wire->write(highByte(reg));
-                wire->write(lowByte(reg));
-                wire->endTransmission();
-                wire->requestFrom(addr, (u8)1);
-                x = wire->read();
-                return x;
-            }
-
-            static void s_writeBlockData(Wire* wire, u8 addr, u16 reg, u8* val, u8 size)
-            {
-                wire->beginTransmission(addr);
-                wire->write(highByte(reg));
-                wire->write(lowByte(reg));
-                // Wire.write(val, size);
-                for (u8 i = 0; i < size; i++)
+                static void s_writeByteData(Wire* wire, u8 m_addr, u16 reg, u8 val)
                 {
-                    wire->write(val[i]);
+                    wire->beginTransmission(m_addr);
+                    wire->write(nendian::high_byte(reg));
+                    wire->write(nendian::low_byte(reg));
+                    wire->write(val);
+                    wire->endTransmission();
                 }
-                wire->endTransmission();
-            }
 
-            static void s_readBlockData(Wire* wire, u8 addr, u8* buf, u16 reg, u8 size)
-            {
-                wire->beginTransmission(addr);
-                wire->write(highByte(reg));
-                wire->write(lowByte(reg));
-                wire->endTransmission();
-                wire->requestFrom(addr, size);
-                for (u8 i = 0; i < size; i++)
+                static u8 s_readByteData(Wire* wire, u8 m_addr, u16 reg)
                 {
-                    buf[i] = wire->read();
+                    u8 x;
+                    wire->beginTransmission(m_addr);
+                    wire->write(nendian::high_byte(reg));
+                    wire->write(nendian::low_byte(reg));
+                    wire->endTransmission();
+                    wire->requestFrom(m_addr, (u8)1);
+                    x = wire->read();
+                    return x;
                 }
-            }
-        }  // namespace nwire
 
-        struct touch_panel_gt911_t
-        {
-            u8   addr;
-            u8   pinSda;
-            u8   pinScl;
-            u8   pinRst;
-            u8   configBuf[GT911_CONFIG_SIZE];
-            Wire m_wire;
-        };
-
-        static void s_tp_gt911_begin(touch_panel_gt911_t* tp, u8 _addr)
-        {
-            tp->addr = _addr;
-            tp->m_wire.begin(tp->pinSda, tp->pinScl);
-        }
-
-        static void s_tp_gt911_calculateChecksum(touch_panel_gt911_t* tp)
-        {
-            u8 checksum;
-            for (u8 i = 0; i < GT911_CONFIG_SIZE; i++)
-            {
-                checksum += tp->configBuf[i];
-            }
-            checksum                                                = (~checksum) + 1;
-            tp->configBuf[GT911_CONFIG_CHKSUM - GT911_CONFIG_START] = checksum;
-        }
-
-        static void s_tp_gt911_reconfig(touch_panel_gt911_t* tp)
-        {
-            s_tp_gt911_calculateChecksum(tp);
-            nwire::s_writeByteData(&tp->m_wire, tp->addr, GT911_CONFIG_CHKSUM, tp->configBuf[GT911_CONFIG_CHKSUM - GT911_CONFIG_START]);
-            nwire::s_writeByteData(&tp->m_wire, tp->addr, GT911_CONFIG_FRESH, 1);
-        }
-
-        static void s_tp_gt911_setResolution(touch_panel_gt911_t* tp, u16 _width, u16 _height)
-        {
-            tp->configBuf[GT911_X_OUTPUT_MAX_LOW - GT911_CONFIG_START]  = lowByte(_width);
-            tp->configBuf[GT911_X_OUTPUT_MAX_HIGH - GT911_CONFIG_START] = highByte(_width);
-            tp->configBuf[GT911_Y_OUTPUT_MAX_LOW - GT911_CONFIG_START]  = lowByte(_height);
-            tp->configBuf[GT911_Y_OUTPUT_MAX_HIGH - GT911_CONFIG_START] = highByte(_height);
-            s_tp_gt911_reconfig(tp);
-        }
-
-        static inline u8  s_tp_gt911_read_id(u8* data) { return data[0]; }
-        static inline u16 s_tp_gt911_read_x(u8* data) { return (u16)(data[1]) + (u16)(data[2] << 8); }
-        static inline u16 s_tp_gt911_read_y(u8* data) { return (u16)(data[3]) + (u16)(data[4] << 8); }
-        static inline u16 s_tp_gt911_read_size(u8* data) { return (u16)(data[5]) + (u16)(data[6] << 8); }
-
-        static bool s_tp_gt911_read(touch_t& t, touch_point_t* points, u8* touches)
-        {
-            touch_panel_gt911_t* tp = (touch_panel_gt911_t*)t.m_touch_panel;
-
-            u8 pointInfo      = nwire::s_readByteData(&tp->m_wire, tp->addr, GT911_POINT_INFO);
-            u8 bufferStatus   = pointInfo >> 7 & 1;
-            u8 proximityValid = pointInfo >> 5 & 1;
-            u8 haveKey        = pointInfo >> 4 & 1;
-            u8 isLargeDetect  = pointInfo >> 6 & 1;
-            *touches          = pointInfo & 0xF;
-            if (bufferStatus == 1 && (*touches > 0))
-            {
-                u8 data[7];
-                for (u8 i = 0; i < *touches; i++)
+                static void s_writeBlockData(Wire* wire, u8 m_addr, u16 reg, u8* val, u8 size)
                 {
-                    nwire::s_readBlockData(&tp->m_wire, tp->addr, data, GT911_POINT_1 + i * 8, 7);
-                    const u16 x    = s_tp_gt911_read_x(data);
-                    const u16 y    = s_tp_gt911_read_y(data);
-                    const u8  id   = s_tp_gt911_read_id(data);
-                    const u16 size = s_tp_gt911_read_size(data);
-                    touch_point_init(points[i], id, x, y, size);
-                    touch_point_transform(points[i], t.m_width, t.m_height, (erotate_t)t.m_rotation, (emirror_t)t.m_mirror);
+                    wire->beginTransmission(m_addr);
+                    wire->write(nendian::high_byte(reg));
+                    wire->write(nendian::low_byte(reg));
+                    // Wire.write(val, size);
+                    for (u8 i = 0; i < size; i++)
+                    {
+                        wire->write(val[i]);
+                    }
+                    wire->endTransmission();
                 }
-                return true;
+
+                static void s_readBlockData(Wire* wire, u8 m_addr, u8* buf, u16 reg, u8 size)
+                {
+                    wire->beginTransmission(m_addr);
+                    wire->write(nendian::high_byte(reg));
+                    wire->write(nendian::low_byte(reg));
+                    wire->endTransmission();
+                    wire->requestFrom(m_addr, size);
+                    for (u8 i = 0; i < size; i++)
+                    {
+                        buf[i] = wire->read();
+                    }
+                }
+            }  // namespace nwire
+
+            struct touch_panel_t
+            {
+                u8   m_addr;
+                u8   m_pinSda;
+                u8   m_pinScl;
+                u8   m_pinRst;
+                Wire m_wire;
+            };
+
+            static void s_tp_begin(touch_panel_t* tp, u8 _addr)
+            {
+                tp->m_addr = _addr;
+                tp->m_wire.begin(tp->m_pinSda, tp->m_pinScl);
             }
-            nwire::s_writeByteData(&tp->m_wire, tp->addr, GT911_POINT_INFO, 0);
-            return false;
-        }
 
-        static touch_panel_gt911_t* s_tp_gt911_create(u8 _addr, u8 _sda, u8 _scl, u8 _int, u8 _rst, u16 _width, u16 _height)
-        {
-            touch_panel_gt911_t* tp = new touch_panel_gt911_t();
+            static void s_tp_calculateChecksum(u8* configBuf)
+            {
+                u8 checksum;
+                for (u8 i = 0; i < GT911_CONFIG_SIZE; i++)
+                {
+                    checksum += configBuf[i];
+                }
+                checksum                                            = (~checksum) + 1;
+                configBuf[GT911_CONFIG_CHKSUM - GT911_CONFIG_START] = checksum;
+            }
 
-            tp->addr   = _addr;
-            tp->pinSda = _sda;
-            tp->pinScl = _scl;
-            tp->pinRst = _rst;
+            static void s_tp_reconfig(touch_panel_t* tp, u8* configBuf)
+            {
+                s_tp_calculateChecksum(configBuf);
+                nwire::s_writeByteData(&tp->m_wire, tp->m_addr, GT911_CONFIG_CHKSUM, configBuf[GT911_CONFIG_CHKSUM - GT911_CONFIG_START]);
+                nwire::s_writeByteData(&tp->m_wire, tp->m_addr, GT911_CONFIG_FRESH, 1);
+            }
 
-            tp->m_wire = Wire();
-            tp->m_wire.begin(_sda, _scl);
+            static void s_tp_setResolution(touch_panel_t* tp, u16 _width, u16 _height)
+            {
+                u8 configBuf[GT911_CONFIG_SIZE];
+                g_memclr(configBuf, sizeof(configBuf));
+                configBuf[GT911_X_OUTPUT_MAX_LOW - GT911_CONFIG_START]  = nendian::low_byte(_width);
+                configBuf[GT911_X_OUTPUT_MAX_HIGH - GT911_CONFIG_START] = nendian::high_byte(_width);
+                configBuf[GT911_Y_OUTPUT_MAX_LOW - GT911_CONFIG_START]  = nendian::low_byte(_height);
+                configBuf[GT911_Y_OUTPUT_MAX_HIGH - GT911_CONFIG_START] = nendian::high_byte(_height);
+                s_tp_reconfig(tp, configBuf);
+            }
 
-            return tp;
-        }
+            static inline u8  s_tp_read_id(u8* data) { return data[0]; }
+            static inline u16 s_tp_read_x(u8* data) { return (u16)(data[1]) + (u16)(data[2] << 8); }
+            static inline u16 s_tp_read_y(u8* data) { return (u16)(data[3]) + (u16)(data[4] << 8); }
+            static inline u16 s_tp_read_size(u8* data) { return (u16)(data[5]) + (u16)(data[6] << 8); }
 
-// GT911 touch panel configuration for 4'' inch 480x480 panel from Guition
-#define TOUCH_GT911_ADDR1    0x5D
-#define TOUCH_GT911_ADDR2    0x14
-#define TOUCH_GT911_SCL      45
-#define TOUCH_GT911_SDA      19
-#define TOUCH_GT911_INT      -1
-#define TOUCH_GT911_RST      -1
-#define TOUCH_GT911_ROTATION ROTATION_NORMAL
-#define TOUCH_MAP_WIDTH      480
-#define TOUCH_MAP_HEIGHT     480
+            static bool s_tp_read(touch_t& t, touch_point_t* points, u8* touches)
+            {
+                touch_panel_t* tp = (touch_panel_t*)t.m_touch_panel;
 
-        void touch_gt911_init(touch_t& t, u16 width, u16 height, u64 polling_interval_ms, u8 i2c_addr, i8 sda_pin, i8 scl_pin, i8 int_pin, i8 rst_pin, erotate_t rotation, emirror_t mirror)
-        {
-            touch_init(t, width, height, polling_interval_ms, rotation, mirror);
+                u8 pointInfo      = nwire::s_readByteData(&tp->m_wire, tp->m_addr, GT911_POINT_INFO);
+                u8 bufferStatus   = pointInfo >> 7 & 1;
+                u8 proximityValid = pointInfo >> 5 & 1;
+                u8 haveKey        = pointInfo >> 4 & 1;
+                u8 isLargeDetect  = pointInfo >> 6 & 1;
+                *touches          = pointInfo & 0xF;
+                if (bufferStatus == 1 && (*touches > 0))
+                {
+                    u8 data[7];
+                    for (u8 i = 0; i < *touches; i++)
+                    {
+                        nwire::s_readBlockData(&tp->m_wire, tp->m_addr, data, GT911_POINT_1 + i * 8, 7);
+                        const u16 x    = s_tp_read_x(data);
+                        const u16 y    = s_tp_read_y(data);
+                        const u8  id   = s_tp_read_id(data);
+                        const u16 size = s_tp_read_size(data);
+                        touch_point_init(points[i], id, x, y, size);
+                        touch_point_transform(points[i], t.m_width, t.m_height, (erotate_t)t.m_rotation, (emirror_t)t.m_mirror);
+                    }
+                    return true;
+                }
+                nwire::s_writeByteData(&tp->m_wire, tp->m_addr, GT911_POINT_INFO, 0);
+                return false;
+            }
 
-            touch_panel_gt911_t* touch_panel_gt911 = s_tp_gt911_create(i2c_addr, sda_pin, scl_pin, int_pin, rst_pin, width, height);
-            s_tp_gt911_begin(touch_panel_gt911);
+            static touch_panel_t* s_tp_create(u8 _addr, u8 _sda, u8 _scl, u8 _int, u8 _rst, u16 _width, u16 _height)
+            {
+                touch_panel_t* tp = new touch_panel_t();
 
-            t.m_touch_panel         = touch_panel_gt911;
-            t.m_touch_panel_scan_fn = s_tp_gt911_read;
-        }
+                tp->m_addr   = _addr;
+                tp->m_pinSda = _sda;
+                tp->m_pinScl = _scl;
+                tp->m_pinRst = _rst;
+
+                tp->m_wire = Wire();
+                tp->m_wire.begin(_sda, _scl);
+
+                return tp;
+            }
+
+            // GT911 touch panel configuration for 4'' inch 480x480 panel from Guition
+            const u8  cTOUCH_GT911_ADDR1    = 0x5D;
+            const u8  cTOUCH_GT911_ADDR2    = 0x14;
+            const i8  cTOUCH_GT911_SCL      = 45;
+            const i8  cTOUCH_GT911_SDA      = 19;
+            const i8  cTOUCH_GT911_INT      = -1;
+            const i8  cTOUCH_GT911_RST      = -1;
+            const u8  cTOUCH_GT911_ROTATION = ROTATION_NORMAL;
+            const u16 cTOUCH_MAP_WIDTH      = 480;
+            const u16 cTOUCH_MAP_HEIGHT     = 480;
+
+            void touch_init(touch_t& t, u16 width, u16 height, u64 polling_interval_ms, u8 i2c_addr, i8 sda_pin, i8 scl_pin, i8 int_pin, i8 rst_pin, erotate_t rotation, emirror_t mirror)
+            {
+                ncore::ntouch::touch_init(t, width, height, polling_interval_ms, rotation, mirror);
+
+                touch_panel_t* touch_panel = s_tp_create(i2c_addr, sda_pin, scl_pin, int_pin, rst_pin, width, height);
+                s_tp_begin(touch_panel, i2c_addr);
+
+                t.m_touch_panel         = touch_panel;
+                t.m_touch_panel_scan_fn = s_tp_read;
+            }
+        }  // namespace ngt911
 
     }  // namespace ntouch
 }  // namespace ncore

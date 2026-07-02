@@ -1,5 +1,5 @@
-#ifndef _ARDUINO_GC9107_H_
-#define _ARDUINO_GC9107_H_
+#ifndef __RLCD_LIBDISPLAY_GC9107_H__
+#define __RLCD_LIBDISPLAY_GC9107_H__
 
 #include "lib_display/display_gfx.h"
 #include "lib_display/display_tft.h"

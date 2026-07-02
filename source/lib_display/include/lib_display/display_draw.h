@@ -1,5 +1,5 @@
-#ifndef _ARDUINO_G_H_
-    #define _ARDUINO_G_H_
+#ifndef __RLCD_LIBDISPLAY_G_H__
+    #define __RLCD_LIBDISPLAY_G_H__
 
     #include "lib_display/display_databus.h"
 
@@ -23,7 +23,7 @@ protected:
       HEIGHT;       ///< This is the 'raw' display height - never changes
 };
 
-#endif  // _ARDUINO_G_H_
+#endif // __RLCD_LIBDISPLAY_G_H__
 
 // utility functions
 bool gfx_draw_bitmap_to_framebuffer(uint16_t *from_bitmap, int16_t bitmap_w, int16_t bitmap_h, uint16_t *framebuffer, int16_t x, int16_t y, int16_t framebuffer_w, int16_t framebuffer_h);

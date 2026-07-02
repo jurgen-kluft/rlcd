@@ -2,8 +2,8 @@
  * start rewrite from:
  * https://github.com/adafruit/Adafruit-GFX-Library.git
  */
-#ifndef _ARDUINO_HWSPI_H_
-#define _ARDUINO_HWSPI_H_
+#ifndef __RLCD_LIBDISPLAY_HWSPI_H__
+#define __RLCD_LIBDISPLAY_HWSPI_H__
 
 #include <SPI.h>
 #include "lib_display/display_databus.h"
@@ -100,4 +100,4 @@ private:
 #endif  // !defined(LITTLE_FOOT_PRINT)
 };
 
-#endif  // _ARDUINO_HWSPI_H_
+#endif // __RLCD_LIBDISPLAY_HWSPI_H__

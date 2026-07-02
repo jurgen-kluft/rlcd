@@ -6,8 +6,8 @@
  *   - 128x64
  *   - 64x64  (e.g. WiseChip UG-6464TDDBG01)
  */
-#ifndef _ARDUINO_SSD1357_H_
-#define _ARDUINO_SSD1357_H_
+#ifndef __RLCD_LIBDISPLAY_SSD1357_H__
+#define __RLCD_LIBDISPLAY_SSD1357_H__
 
 #include "lib_display/display_gfx.h"
 #include "lib_display/display_tft.h"

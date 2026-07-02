@@ -2,8 +2,8 @@
  * start rewrite from:
  * https://github.com/adafruit/Adafruit-GFX-Library.git
  */
-#ifndef _ARDUINO_SSD1331_H_
-#define _ARDUINO_SSD1331_H_
+#ifndef __RLCD_LIBDISPLAY_SSD1331_H__
+#define __RLCD_LIBDISPLAY_SSD1331_H__
 
 #include "lib_display/display_gfx.h"
 #include "lib_display/display_tft.h"

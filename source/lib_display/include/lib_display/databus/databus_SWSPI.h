@@ -2,8 +2,8 @@
  * start rewrite from:
  * https://github.com/adafruit/Adafruit-GFX-Library.git
  */
-#ifndef _ARDUINO_SWSPI_H_
-#define _ARDUINO_SWSPI_H_
+#ifndef __RLCD_LIBDISPLAY_SWSPI_H__
+#define __RLCD_LIBDISPLAY_SWSPI_H__
 
 #include "lib_display/display_databus.h"
 
@@ -92,4 +92,4 @@ private:
 #endif                               // defined(USE_FAST_PINIO)
 };
 
-#endif  // _ARDUINO_SWSPI_H_
+#endif // __RLCD_LIBDISPLAY_SWSPI_H__

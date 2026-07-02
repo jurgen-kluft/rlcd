@@ -3,8 +3,8 @@
  * https://github.com/adafruit/Adafruit-GFX-Library.git
  * https://github.com/adafruit/Adafruit-SSD1351-library.git
  */
-#ifndef _ARDUINO_SSD1351_H_
-#define _ARDUINO_SSD1351_H_
+#ifndef __RLCD_LIBDISPLAY_SSD1351_H__
+#define __RLCD_LIBDISPLAY_SSD1351_H__
 
 #include "lib_display/display_gfx.h"
 #include "lib_display/display_tft.h"

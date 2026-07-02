@@ -2,8 +2,8 @@
  * start rewrite from:
  * https://github.com/adafruit/Adafruit-GFX-Library.git
  */
-#ifndef _ARDUINO_ST7796_H_
-#define _ARDUINO_ST7796_H_
+#ifndef __RLCD_LIBDISPLAY_ST7796_H__
+#define __RLCD_LIBDISPLAY_ST7796_H__
 
 #include "lib_display/display_gfx.h"
 #include "lib_display/display_tft.h"

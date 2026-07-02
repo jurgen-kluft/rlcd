@@ -1,5 +1,5 @@
-#ifndef _ARDUINO_NV3023_H_
-#define _ARDUINO_NV3023_H_
+#ifndef __RLCD_LIBDISPLAY_NV3023_H__
+#define __RLCD_LIBDISPLAY_NV3023_H__
 
 #include <Arduino.h>
 #include <Print.h>

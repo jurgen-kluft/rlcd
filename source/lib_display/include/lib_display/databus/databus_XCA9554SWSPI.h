@@ -1,5 +1,5 @@
-#ifndef _ARDUINO_XCA9554SWSPI_H_
-#define _ARDUINO_XCA9554SWSPI_H_
+#ifndef __RLCD_LIBDISPLAY_XCA9554SWSPI_H__
+#define __RLCD_LIBDISPLAY_XCA9554SWSPI_H__
 
 #include <Wire.h>
 
@@ -47,4 +47,4 @@ protected:
 private:
 };
 
-#endif  // _ARDUINO_XCA9554SWSPI_H_
+#endif // __RLCD_LIBDISPLAY_XCA9554SWSPI_H__

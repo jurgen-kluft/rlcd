@@ -5,8 +5,8 @@
  * Data Sheet:
  * http://read.pudn.com/downloads648/ebook/2620902/R61529.pdf
  */
-#ifndef _ARDUINO_R61529_H_
-#define _ARDUINO_R61529_H_
+#ifndef __RLCD_LIBDISPLAY_R61529_H__
+#define __RLCD_LIBDISPLAY_R61529_H__
 
 #include "lib_display/display_gfx.h"
 #include "lib_display/display_tft.h"

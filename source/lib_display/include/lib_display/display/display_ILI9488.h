@@ -2,8 +2,8 @@
  * start rewrite from:
  * https://github.com/nopnop2002/esp-idf-parallel-tft
  */
-#ifndef _ARDUINO_ILI9488_H_
-#define _ARDUINO_ILI9488_H_
+#ifndef __RLCD_LIBDISPLAY_ILI9488_H__
+#define __RLCD_LIBDISPLAY_ILI9488_H__
 
 #include "lib_display/display_gfx.h"
 #include "lib_display/display_tft.h"
@@ -166,4 +166,4 @@ protected:
 private:
 };
 
-#endif  // #ifndef _ARDUINO_ILI9488_H_
+#endif  // #ifndef __RLCD_LIBDISPLAY_ILI9488_H__

@@ -1,7 +1,7 @@
 #if defined(TARGET_RP2040) || defined(PICO_RP2350)
 
-    #ifndef _ARDUINO_RPIPICOPAR16_H_
-        #define _ARDUINO_RPIPICOPAR16_H_
+    #ifndef __RLCD_LIBDISPLAY_RPIPICOPAR16_H__
+        #define __RLCD_LIBDISPLAY_RPIPICOPAR16_H__
 
         #include "lib_display/display_databus.h"
 
@@ -47,6 +47,6 @@ private:
     uint32_t _dataClrMask;
 };
 
-    #endif  // _ARDUINO_RPIPICOPAR16_H_
+    #endif // __RLCD_LIBDISPLAY_RPIPICOPAR16_H__
 
 #endif  // #if defined(TARGET_RP2040) || defined(PICO_RP2350)

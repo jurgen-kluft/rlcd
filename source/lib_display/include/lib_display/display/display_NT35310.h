@@ -5,8 +5,8 @@
  * Data Sheet:
  * http://read.pudn.com/downloads648/ebook/2620902/NT35310.pdf
  */
-#ifndef _ARDUINO_NT35310_H_
-#define _ARDUINO_NT35310_H_
+#ifndef __RLCD_LIBDISPLAY_NT35310_H__
+#define __RLCD_LIBDISPLAY_NT35310_H__
 
 #include "lib_display/display_gfx.h"
 #include "lib_display/display_tft.h"
@@ -286,4 +286,4 @@ protected:
 private:
 };
 
-#endif  // _ARDUINO_NT35310_H_
+#endif // __RLCD_LIBDISPLAY_NT35310_H__

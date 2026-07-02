@@ -3,8 +3,8 @@
  * https://github.com/adafruit/Adafruit-GFX-Library.git
  * https://github.com/gitcnd/LCDWIKI_SPI.git
  */
-#ifndef _ARDUINO_JBT6K71_H_
-#define _ARDUINO_JBT6K71_H_
+#ifndef __RLCD_LIBDISPLAY_JBT6K71_H__
+#define __RLCD_LIBDISPLAY_JBT6K71_H__
 
 #include "lib_display/display_gfx.h"
 #include "lib_display/display_tft.h"

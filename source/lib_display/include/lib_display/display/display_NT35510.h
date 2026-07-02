@@ -2,8 +2,8 @@
  * start rewrite from:
  * https://github.com/hi631/LCD_NT35510-MRB3971.git
  */
-#ifndef _ARDUINO_NT35510_H_
-#define _ARDUINO_NT35510_H_
+#ifndef __RLCD_LIBDISPLAY_NT35510_H__
+#define __RLCD_LIBDISPLAY_NT35510_H__
 
 #include "lib_display/display_gfx.h"
 #include "lib_display/display_tft.h"

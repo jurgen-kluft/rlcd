@@ -1,7 +1,7 @@
 #ifdef ARDUINO_ARCH_STM32
 
-    #ifndef _ARDUINO_STM32PAR8_H_
-        #define _ARDUINO_STM32PAR8_H_
+    #ifndef __RLCD_LIBDISPLAY_STM32PAR8_H__
+        #define __RLCD_LIBDISPLAY_STM32PAR8_H__
 
         #include "lib_display/display_databus.h"
 
@@ -52,6 +52,6 @@ private:
     ARDUINOGFX_PORT_t _rdPinMaskSet;  ///< Bitmask for data/command SET (OR)
 };
 
-    #endif  // _ARDUINO_STM32PAR8_H_
+    #endif // __RLCD_LIBDISPLAY_STM32PAR8_H__
 
 #endif  // #ifdef ARDUINO_ARCH_STM32

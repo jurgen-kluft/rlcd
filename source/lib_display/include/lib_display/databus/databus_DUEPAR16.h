@@ -1,7 +1,7 @@
 #if defined(ARDUINO_ARCH_SAM)
 
-    #ifndef _ARDUINO_DUEPAR16_H_
-        #define _ARDUINO_DUEPAR16_H_
+    #ifndef __RLCD_LIBDISPLAY_DUEPAR16_H__
+        #define __RLCD_LIBDISPLAY_DUEPAR16_H__
 
         #include "lib_display/display_databus.h"
 
@@ -47,6 +47,6 @@ private:
     int8_t          _cs, _dc, _wr, _rd;
 };
 
-    #endif  // _ARDUINO_DUEPAR16_H_
+    #endif // __RLCD_LIBDISPLAY_DUEPAR16_H__
 
 #endif  // #if defined(ARDUINO_ARCH_SAM)

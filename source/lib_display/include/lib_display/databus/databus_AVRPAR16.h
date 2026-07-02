@@ -1,7 +1,7 @@
 #ifdef __AVR__
 
-    #ifndef _ARDUINO_AVRPAR16_H_
-        #define _ARDUINO_AVRPAR16_H_
+    #ifndef __RLCD_LIBDISPLAY_AVRPAR16_H__
+        #define __RLCD_LIBDISPLAY_AVRPAR16_H__
 
         #include "lib_display/display_databus.h"
 
@@ -56,6 +56,6 @@ private:
     PORTreg_t _dataPortHigh;  ///< PORT register for data/command
 };
 
-    #endif  // _ARDUINO_AVRPAR16_H_
+    #endif // __RLCD_LIBDISPLAY_AVRPAR16_H__
 
 #endif  // #ifdef __AVR__

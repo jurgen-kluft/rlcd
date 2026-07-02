@@ -4,8 +4,8 @@
  */
 #ifdef ARDUINO_ARCH_NRF52840
 
-    #ifndef _ARDUINO_MBEDSPI_H_
-        #define _ARDUINO_MBEDSPI_H_
+    #ifndef __RLCD_LIBDISPLAY_MBEDSPI_H__
+        #define __RLCD_LIBDISPLAY_MBEDSPI_H__
 
         #include <SPI.h>
         #if !defined(ARDUINO_AS_MBED_LIBRARY)
@@ -67,6 +67,6 @@ private:
     };
 };
 
-    #endif  // _ARDUINO_MBEDSPI_H_
+    #endif // __RLCD_LIBDISPLAY_MBEDSPI_H__
 
 #endif  // #ifdef ARDUINO_ARCH_NRF52840
