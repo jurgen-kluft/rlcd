@@ -58,15 +58,15 @@ namespace ncore
                     nlog::log_info("main", "Touch panel initialized successfully");
                 }
 
-                // if (nlcd::sdcard_initialize())
-                // {
-                //     u64 total_bytes, free_bytes;
-                //     if (nlcd::sdcard_get_usage(&total_bytes, &free_bytes))
-                //     {
-                //         nlog::printfln("SD card total size: %.2f MB", va_t(total_bytes / (1024.0 * 1024.0)));
-                //         nlog::printfln("SD card free space: %.2f MB", va_t(free_bytes / (1024.0 * 1024.0)));
-                //     }
-                // }
+                if (nlcd::sdcard_initialize())
+                {
+                    u64 total_bytes, free_bytes;
+                    if (nlcd::sdcard_get_usage(&total_bytes, &free_bytes))
+                    {
+                        nlog::printfln("SD card total size: %.2f MB", va_t(total_bytes / (1024.0 * 1024.0)));
+                        nlog::printfln("SD card free space: %.2f MB", va_t(free_bytes / (1024.0 * 1024.0)));
+                    }
+                }
             }
         }
 
