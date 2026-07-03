@@ -63,13 +63,14 @@ namespace ncore
             }
         }
 
-        void touch_init(touch_t& tp, u16 width, u16 height, u64 polling_interval_ms, erotate_t rotation, emirror_t mirror)
+        void touch_init(touch_t& tp, u16 width, u16 height, u16 polling_interval_ms, erotate_t rotation, emirror_t mirror)
         {
             tp.m_width               = 480;
             tp.m_height              = 480;
             tp.m_rotation            = (u8)rotation;
             tp.m_mirror              = (u8)mirror;
             tp.m_polling_interval_ms = polling_interval_ms;
+            tp.m_polling_timer_ms    = 0;
             tp.m_touch_panel         = nullptr;
             tp.m_touch_panel_scan_fn = nullptr;
         }
@@ -85,9 +86,9 @@ namespace ncore
             bool tp_scan_result = false;
             if (tp.m_touch_panel_scan_fn != NULL)
             {
-                if (now_ms > tp.m_polling_interval_ms)
+                if (now_ms > tp.m_polling_timer_ms)
                 {
-                    tp.m_polling_interval_ms = now_ms + 20;                                  // Set next polling interval to 20ms later (50 Hz)
+                    tp.m_polling_timer_ms = now_ms + tp.m_polling_interval_ms;       // Set next polling interval
                     tp.m_touch_panel_scan_fn(tp, points, max_touches, num_touches);  // Read touch data from the GT911 controller
                     tp_scan_result = true;
                 }

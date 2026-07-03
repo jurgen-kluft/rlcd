@@ -76,28 +76,25 @@ namespace ncore
         {
             const u64 now_ms = ntimer::millis();
 
-            // if (touch_touched(now_ms))
-            // {
-            //     nlog::log_infof("main", "Touch detected at: (%d, %d)", va_list_t(va_t(touch_last_x), va_t(touch_last_y)));
-            //     toggle_lcd_fill_time = now_ms;  // Reset the fill timer when a touch is detected
-            // }
-
             u8                    num_points = 0;
             ntouch::touch_point_t points[ntouch::TP_CT_MAX_TOUCH];
             if (ntouch::touch_scan(gTouchPanel, now_ms, points, ntouch::TP_CT_MAX_TOUCH, &num_points) == true)
             {
-                nlog::log_infof("main", "Touch detected: %u points", va_list_t(va_t(num_points)));
-                for (u8 i = 0; i < num_points; i++)
+                if (num_points > 0)
                 {
-                    const ntouch::touch_point_t *point = &points[i];
-                    if (point != nullptr)
+                    nlog::log_infof("main", "Touch detected: %u points", va_list_t(va_t(num_points)));
+                    for (u8 i = 0; i < num_points; i++)
                     {
-                        nlog::log_infof("main", "Point %u: (%u, %u, %u)", va_list_t(va_t(i + 1), va_t(point->m_x), va_t(point->m_y), va_t(point->m_size)));
+                        const ntouch::touch_point_t *point = &points[i];
+                        if (point != nullptr)
+                        {
+                            nlog::log_infof("main", "Point %u: (%u, %u, %u)", va_list_t(va_t(i + 1), va_t(point->m_x), va_t(point->m_y), va_t(point->m_size)));
 
-                        // nlcd::draw_rectangle(point->m_x, point->m_y, point->m_x + 1, point->m_y + 1, 0xF800);  // Draw a red rectangle around the touch point
+                            // nlcd::draw_rectangle(point->m_x, point->m_y, point->m_x + 1, point->m_y + 1, 0xF800);  // Draw a red rectangle around the touch point
+                        }
                     }
+                    toggle_lcd_fill_time = now_ms;  // Reset the fill timer when a touch is detected
                 }
-                toggle_lcd_fill_time = now_ms;  // Reset the fill timer when a touch is detected
             }
 
             if (now_ms - toggle_lcd_fill_time > 2000)
@@ -111,7 +108,7 @@ namespace ncore
                 u16 ex    = sx + (g_random_u32_range(&gRandom, 0, 40) + 10);  // Random width between 10 and 50 pixels
                 u16 ey    = sy + (g_random_u32_range(&gRandom, 0, 40) + 10);  // Random height between 10 and 50 pixels
 
-                // nlcd::draw_rectangle(sx, sy, ex, ey, color);
+                nlcd::draw_rectangle(sx, sy, ex, ey, color);
                 toggle_lcd_fill_time = now_ms;
             }
         }

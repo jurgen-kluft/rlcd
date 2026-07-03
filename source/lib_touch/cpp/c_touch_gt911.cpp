@@ -195,21 +195,24 @@ namespace ncore
                 if (bufferStatus == 1)
                 {
                     const u8 point_cnt = (pointInfo & 0xF) > TP_CT_MAX_TOUCH ? TP_CT_MAX_TOUCH : (pointInfo & 0xF);
-                    u8       points_data[8 * TP_CT_MAX_TOUCH];
-                    nwire::s_readBlockData(tp->m_wire, tp->m_addr, points_data, GT911_POINT_1, 8 * point_cnt);
-
                     const u8 touch_cnt = (point_cnt > max_touches) ? max_touches : point_cnt;
                     *num_touches       = touch_cnt;
 
-                    for (u8 i = 0; i < touch_cnt; i++)
+                    if (touch_cnt > 0)
                     {
-                        const u8* pd   = &points_data[i * 8];
-                        const u16 x    = s_tp_read_x(pd);
-                        const u16 y    = s_tp_read_y(pd);
-                        const u8  id   = s_tp_read_id(pd);
-                        const u16 size = s_tp_read_size(pd);
-                        touch_point_init(points[i], id, x, y, size);
-                        touch_point_transform(points[i], t.m_width, t.m_height, (erotate_t)t.m_rotation, (emirror_t)t.m_mirror);
+                        u8 points_data[8 * TP_CT_MAX_TOUCH];
+                        nwire::s_readBlockData(tp->m_wire, tp->m_addr, points_data, GT911_POINT_1, 8 * point_cnt);
+
+                        for (u8 i = 0; i < touch_cnt; i++)
+                        {
+                            const u8* pd   = &points_data[i * 8];
+                            const u16 x    = s_tp_read_x(pd);
+                            const u16 y    = s_tp_read_y(pd);
+                            const u8  id   = s_tp_read_id(pd);
+                            const u16 size = s_tp_read_size(pd);
+                            touch_point_init(points[i], id, x, y, size);
+                            touch_point_transform(points[i], t.m_width, t.m_height, (erotate_t)t.m_rotation, (emirror_t)t.m_mirror);
+                        }
                     }
                     tp_read_result = true;
                 }
