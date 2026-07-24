@@ -35,6 +35,7 @@ func GetPackage() *denv.Package {
 
 	// WCS library
 	wcsLib := denv.SetupCppLibraryForArduinoEsp32(mainpkg, "lib_wcs", "wcs")
+	wcsLib.AddDependency(touchLib)
 	wcsLib.AddDependencies(corepkg.GetMainLib())
 
 	// GUITION library

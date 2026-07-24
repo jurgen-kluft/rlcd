@@ -5,6 +5,8 @@
     #pragma once
 #endif
 
+#include "lib_touch/c_touch.h"
+
 namespace ncore
 {
     namespace ntouch
@@ -40,13 +42,6 @@ namespace ncore
         static inline bool is_swipe_down(egesture_type_t gt) { return (gt & GT_DIR_DOWN) != 0 && is_swipe(gt); }
         static inline bool is_swipe_left(egesture_type_t gt) { return (gt & GT_DIR_LEFT) != 0 && is_swipe(gt); }
         static inline bool is_swipe_right(egesture_type_t gt) { return (gt & GT_DIR_RIGHT) != 0 && is_swipe(gt); }
-
-        // Input structure for raw touch data passed from your hardware
-        struct touch_point_t
-        {
-            i32 m_x;
-            i32 m_y;
-        };
 
         // Configuration settings for tuning gestures
         struct gesture_config_t
