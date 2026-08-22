@@ -1,8 +1,7 @@
 package rlcd
 
 import (
-	denv "github.com/jurgen-kluft/ccode/denv"
-	cunittest "github.com/jurgen-kluft/cunittest/package"
+	denv "github.com/jurgen-kluft/go-ide/denv"
 	rcore "github.com/jurgen-kluft/rcore/package"
 )
 
@@ -13,13 +12,11 @@ const (
 
 func GetPackage() *denv.Package {
 	// dependencies
-	cunittestpkg := cunittest.GetPackage()
 	corepkg := rcore.GetPackage()
 
 	// main package
 	mainpkg := denv.NewPackage(repo_path, repo_name)
 	mainpkg.AddPackage(corepkg)
-	mainpkg.AddPackage(cunittestpkg)
 
 	// Display library
 	displayLib := denv.SetupCppLibraryForArduinoEsp32(mainpkg, "lib_display", "display")
