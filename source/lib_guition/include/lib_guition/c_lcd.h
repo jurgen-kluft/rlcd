@@ -14,7 +14,7 @@ namespace ncore
         u16  height();
 
         void draw_rectangle(u16 sx, u16 sy, u16 ex, u16 ey, u16 color);
-        void draw_sprite(u16 sx, u16 sy, u16 ex, u16 ey, const u16 *color);
+        void draw_sprite(u16 x, u16 y, const u16 *color, u16 w, u16 h);
 
         void led_toggle();
         void led_switch(bool on);

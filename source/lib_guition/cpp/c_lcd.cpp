@@ -91,7 +91,10 @@ namespace ncore
             g_display_gfx->fillRect(sx, sy, ex - sx + 1, ey - sy + 1, color);
 
         }
-        void draw_sprite(u16 sx, u16 sy, u16 ex, u16 ey, const u16* color) {}
+        void draw_sprite(u16 x, u16 y, const u16 *color, u16 w, u16 h)
+        {
+            g_display_gfx->draw16bitRGBBitmap(x, y, (uint16_t*)color, w, h);
+        }
 
         void led_toggle()
         {
