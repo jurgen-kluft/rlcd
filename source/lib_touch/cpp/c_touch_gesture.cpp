@@ -125,7 +125,7 @@ namespace ncore
         {
             i32 dx = p2.m_x - p1.m_x;
             i32 dy = p2.m_y - p1.m_y;
-            return (i32)math::sqrtf(static_cast<f32>(dx * dx + dy * dy));
+            return (i32)math::nf32::sqrt(static_cast<f32>(dx * dx + dy * dy));
         }
 
         const char* to_string(egesture_type_t gesture)
