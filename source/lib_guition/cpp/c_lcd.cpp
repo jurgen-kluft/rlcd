@@ -50,7 +50,8 @@ namespace ncore
 
     static bool s_guition_display_init()
     {
-        initialize_st7701_display(g_display_databus, g_display_rgbpanel, g_display_gfx);
+        const bool auto_flush = false;
+        initialize_st7701_display(auto_flush, g_display_databus, g_display_rgbpanel, g_display_gfx);
 
         if (s_guition_display_brightness_init() == false)
         {
@@ -85,15 +86,27 @@ namespace ncore
 
         u16 width() { return GUITION_LCD_H_RES; }
         u16 height() { return GUITION_LCD_V_RES; }
+        u16* framebuffer() { return (u16*)g_display_gfx->getFramebuffer(); }
+
+        void frame_begin()
+        {
+            // Begin a new frame for drawing
+        }
 
         void draw_rectangle(u16 sx, u16 sy, u16 ex, u16 ey, u16 color) 
         {
             g_display_gfx->fillRect(sx, sy, ex - sx + 1, ey - sy + 1, color);
 
         }
+
         void draw_sprite(u16 x, u16 y, const u16 *color, u16 w, u16 h)
         {
             g_display_gfx->draw16bitRGBBitmap(x, y, (uint16_t*)color, w, h);
+        }
+
+        void frame_end()
+        {
+            g_display_gfx->flush();
         }
 
         void led_toggle()

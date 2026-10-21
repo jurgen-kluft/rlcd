@@ -7,7 +7,7 @@
     #include "lib_display/databus/databus_ESP32RGBPanel.h"
     #include "lib_display/databus/databus_SWSPI.h"
 
-inline void initialize_st7701_display(Arduino_DataBus*& bus, Arduino_ESP32RGBPanel*& rgbpanel, Arduino_RGB_Display*& gfx)
+inline void initialize_st7701_display(bool auto_flush, Arduino_DataBus*& bus, Arduino_ESP32RGBPanel*& rgbpanel, Arduino_RGB_Display*& gfx)
 {
     // 1. Data Bus (3-Wire SPI)
     bus = new Arduino_SWSPI(  // Create the data bus object
@@ -41,7 +41,7 @@ inline void initialize_st7701_display(Arduino_DataBus*& bus, Arduino_ESP32RGBPan
       480,                          // 2. Height
       rgbpanel,                     // 3. RGB Panel Pointer
       0,                            // 4. Rotation
-      true,                         // 5. Auto Flush
+      auto_flush,                   // 5. Auto Flush
       bus,                          // 6. SPI Initialization Data Bus
       GFX_NOT_DEFINED,              // 7. Reset Pin (RST)
       init_operations,              // 8. Pointer to your initialization array
